@@ -1,0 +1,516 @@
+======================================================
+ Job:     compare  (18739123)
+ Node:    nid005130
+ Started: Wed May 20 01:27:18 AM EEST 2026
+======================================================
+======================================================
+ Job:     compare  (18739116)
+ Node:    nid005124
+ Started: Wed May 20 01:27:18 AM EEST 2026
+======================================================
+[modules] Loaded:
+
+Currently Loaded Modules:
+  1) LUMI/25.03                                      (S)
+  2) craype-x86-trento
+  3) craype-accel-amd-gfx90a
+  4) libfabric/1.22.0
+  5) craype-network-ofi
+  6) xpmem/2.11.5-1.3_g73ade43320bc
+  7) partition/G                                     (S)
+  8) cray-python/3.11.7
+  9) lumi-container-wrapper/0.4.2-cray-python-3.11.7
+
+  Where:
+   S:  Module is Sticky, requires --force to unload or purge
+
+[check] Environment:
+[modules] Loaded:
+
+Currently Loaded Modules:
+  1) LUMI/25.03                                      (S)
+  2) craype-x86-trento
+  3) craype-accel-amd-gfx90a
+  4) libfabric/1.22.0
+  5) craype-network-ofi
+  6) xpmem/2.11.5-1.3_g73ade43320bc
+  7) partition/G                                     (S)
+  8) cray-python/3.11.7
+  9) lumi-container-wrapper/0.4.2-cray-python-3.11.7
+
+  Where:
+   S:  Module is Sticky, requires --force to unload or purge
+
+[check] Environment:
+torch:           2.9.1+rocm6.4
+torch_geometric: 2.7.0
+GPU available:   True
+GPU:             AMD Instinct MI250X  VRAM=68.7GB
+
+[check] Model files:
+  FOUND   /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt  (24M)
+  FOUND   /scratch/project_465002989/GNN_Project/saved_models/specialist_low_z2.pt  (804K)
+  FOUND   /scratch/project_465002989/GNN_Project/saved_models/Global-GAT.pt  (532K)
+  FOUND   /scratch/project_465002989/GNN_Project/saved_models/SpectralLSTM.pt  (4.3M)
+  FOUND   /scratch/project_465002989/GNN_Project/saved_models/pa-lstm.pt  (4.3M)
+
+[run] Wed May 20 01:28:18 AM EEST 2026
+------------------------------------------------------
+  [argv] skipping --mlp_desc_checkpoint (file not found or empty: /scratch/project_465002989/GNN_Project/saved_models/mlp_descriptor.pt)
+  [argv] 4-compare_models.py --zt_checkpoint /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt --out_dir /scratch/project_465002989/GNN_Project/result --n 1024 --mc_runs 64 --val_graphs 10 --seed 42 --spec_low_checkpoint /scratch/project_465002989/GNN_Project/saved_models/specialist_low_z2.pt --global_gat_checkpoint /scratch/project_465002989/GNN_Project/saved_models/Global-GAT.pt --spectral_lstm_checkpoint /scratch/project_465002989/GNN_Project/saved_models/SpectralLSTM.pt --pa_lstm_checkpoint /scratch/project_465002989/GNN_Project/saved_models/pa-lstm.pt
+
+
+Device: cuda
+  GPU: AMD Instinct MI250X  VRAM=68.7 GB
+
+Loading models...
+  ✓ Specialist-Low: /scratch/project_465002989/GNN_Project/saved_models/specialist_low_z2.pt
+  ✓ Global-GAT: /scratch/project_465002989/GNN_Project/saved_models/Global-GAT.pt
+  ✓ SpectralLSTM: /scratch/project_465002989/GNN_Project/saved_models/SpectralLSTM.pt
+  ✓ PA-LSTM: /scratch/project_465002989/GNN_Project/saved_models/pa-lstm.pt  (desc_dim=11)
+  ✓ ZealotTransformer: /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt  (epoch=300  best_RMSE=0.06360110508971574)
+
+Models in tables: ['Persistence', 'Mean-Field ODE', 'Specialist-Low', 'Global-GAT', 'SpectralLSTM', 'PA-LSTM', 'ZealotTransformer']
+
+============================================================
+EXPERIMENT 1 + TABLE 1: Cross-topology RMSE (hub placement)
+============================================================
+
+  [1/12]  topo=ba  Z=2  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=80.5)
+    WARNING: PA-LSTM desc out of range (max=83.0)
+    WARNING: PA-LSTM desc out of range (max=72.5)
+    WARNING: PA-LSTM desc out of range (max=82.4)
+    WARNING: PA-LSTM desc out of range (max=79.0)
+    WARNING: PA-LSTM desc out of range (max=80.5)
+    WARNING: PA-LSTM desc out of range (max=81.2)
+    WARNING: PA-LSTM desc out of range (max=76.0)
+    WARNING: PA-LSTM desc out of range (max=82.5)
+    WARNING: PA-LSTM desc out of range (max=81.0)
+    Persistence             0.3626±0.0256
+    Mean-Field ODE          0.3191±0.0256
+    Specialist-Low          0.3455±0.1753
+    Global-GAT              0.1368±0.0508
+    SpectralLSTM            0.2767±0.0183
+    PA-LSTM                 0.2584±0.0291
+    ZealotTransformer       0.0353±0.0102
+    (94s)
+
+  [2/12]  topo=ba  Z=8  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=69.3)
+    WARNING: PA-LSTM desc out of range (max=72.5)
+    WARNING: PA-LSTM desc out of range (max=68.8)
+    WARNING: PA-LSTM desc out of range (max=78.2)
+    WARNING: PA-LSTM desc out of range (max=62.1)
+    WARNING: PA-LSTM desc out of range (max=60.3)
+    WARNING: PA-LSTM desc out of range (max=68.3)
+    WARNING: PA-LSTM desc out of range (max=73.8)
+    WARNING: PA-LSTM desc out of range (max=65.2)
+    WARNING: PA-LSTM desc out of range (max=62.3)
+    Persistence             0.7050±0.0206
+    Mean-Field ODE          0.5495±0.0188
+    Specialist-Low          0.1221±0.0754
+    Global-GAT              0.0917±0.0338
+    SpectralLSTM            0.2457±0.0152
+    PA-LSTM                 0.5149±0.0686
+    ZealotTransformer       0.0142±0.0065
+    (89s)
+
+  [3/12]  topo=ba  Z=16  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=61.8)
+    WARNING: PA-LSTM desc out of range (max=50.8)
+    WARNING: PA-LSTM desc out of range (max=53.2)
+    WARNING: PA-LSTM desc out of range (max=52.6)
+    WARNING: PA-LSTM desc out of range (max=61.1)
+    WARNING: PA-LSTM desc out of range (max=56.2)
+    WARNING: PA-LSTM desc out of range (max=57.6)
+    WARNING: PA-LSTM desc out of range (max=48.6)
+    WARNING: PA-LSTM desc out of range (max=56.6)
+    WARNING: PA-LSTM desc out of range (max=59.0)
+    Persistence             0.8133±0.0095
+    Mean-Field ODE          0.5452±0.0083
+    Specialist-Low          0.0959±0.0201
+    Global-GAT              0.0686±0.0266
+    SpectralLSTM            0.1704±0.0078
+    PA-LSTM                 0.3758±0.0719
+    ZealotTransformer       0.0096±0.0025
+    (89s)
+
+  [4/12]  topo=ba  Z=32  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=42.4)
+    WARNING: PA-LSTM desc out of range (max=38.0)
+    WARNING: PA-LSTM desc out of range (max=31.6)
+    WARNING: PA-LSTM desc out of range (max=45.3)
+    WARNING: PA-LSTM desc out of range (max=47.4)
+    WARNING: PA-LSTM desc out of range (max=44.1)
+    WARNING: PA-LSTM desc out of range (max=43.7)
+    WARNING: PA-LSTM desc out of range (max=42.5)
+    WARNING: PA-LSTM desc out of range (max=52.3)
+    WARNING: PA-LSTM desc out of range (max=45.2)
+    Persistence             0.8638±0.0062
+    Mean-Field ODE          0.4502±0.0049
+    Specialist-Low          0.0941±0.0025
+    Global-GAT              0.0577±0.0176
+    SpectralLSTM            0.1285±0.0054
+    PA-LSTM                 0.1146±0.0300
+    ZealotTransformer       0.0084±0.0024
+    (88s)
+
+  [5/12]  topo=er  Z=2  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=83.0)
+    WARNING: PA-LSTM desc out of range (max=82.8)
+    WARNING: PA-LSTM desc out of range (max=82.9)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=83.0)
+    WARNING: PA-LSTM desc out of range (max=82.9)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    Persistence             0.0831±0.0227
+    Mean-Field ODE          0.0440±0.0185
+    Specialist-Low          0.7331±0.0215
+    Global-GAT              0.1974±0.0250
+    SpectralLSTM            0.0295±0.0146
+    PA-LSTM                 0.1101±0.0225
+    ZealotTransformer       0.0251±0.0125
+    (90s)
+
+  [6/12]  topo=er  Z=8  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=80.9)
+    WARNING: PA-LSTM desc out of range (max=77.5)
+    WARNING: PA-LSTM desc out of range (max=73.0)
+    WARNING: PA-LSTM desc out of range (max=80.3)
+    WARNING: PA-LSTM desc out of range (max=69.9)
+    WARNING: PA-LSTM desc out of range (max=75.1)
+    WARNING: PA-LSTM desc out of range (max=76.0)
+    WARNING: PA-LSTM desc out of range (max=79.2)
+    WARNING: PA-LSTM desc out of range (max=80.7)
+    WARNING: PA-LSTM desc out of range (max=75.8)
+    Persistence             0.2920±0.0149
+    Mean-Field ODE          0.1446±0.0130
+    Specialist-Low          0.5394±0.0211
+    Global-GAT              0.4028±0.0172
+    SpectralLSTM            0.1811±0.0142
+    PA-LSTM                 0.3239±0.0143
+    ZealotTransformer       0.0177±0.0068
+    (89s)
+
+  [7/12]  topo=er  Z=16  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=77.4)
+    WARNING: PA-LSTM desc out of range (max=73.4)
+    WARNING: PA-LSTM desc out of range (max=78.5)
+    WARNING: PA-LSTM desc out of range (max=78.3)
+    WARNING: PA-LSTM desc out of range (max=65.6)
+    WARNING: PA-LSTM desc out of range (max=75.7)
+    WARNING: PA-LSTM desc out of range (max=74.6)
+    WARNING: PA-LSTM desc out of range (max=71.8)
+    WARNING: PA-LSTM desc out of range (max=69.4)
+    WARNING: PA-LSTM desc out of range (max=72.3)
+    Persistence             0.4590±0.0193
+    Mean-Field ODE          0.2061±0.0167
+    Specialist-Low          0.3939±0.0464
+    Global-GAT              0.5677±0.0204
+    SpectralLSTM            0.2484±0.0206
+    PA-LSTM                 0.4977±0.0181
+    ZealotTransformer       0.0185±0.0100
+    (89s)
+
+  [8/12]  topo=er  Z=32  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=77.1)
+    WARNING: PA-LSTM desc out of range (max=72.7)
+    WARNING: PA-LSTM desc out of range (max=73.0)
+    WARNING: PA-LSTM desc out of range (max=75.8)
+    WARNING: PA-LSTM desc out of range (max=79.3)
+    WARNING: PA-LSTM desc out of range (max=73.3)
+    WARNING: PA-LSTM desc out of range (max=70.3)
+    WARNING: PA-LSTM desc out of range (max=55.2)
+    WARNING: PA-LSTM desc out of range (max=68.7)
+    WARNING: PA-LSTM desc out of range (max=65.8)
+    Persistence             0.6442±0.0114
+    Mean-Field ODE          0.2507±0.0097
+    Specialist-Low          0.2498±0.0423
+    Global-GAT              0.5690±0.2550
+    SpectralLSTM            0.2990±0.0190
+    PA-LSTM                 0.6918±0.0107
+    ZealotTransformer       0.0209±0.0071
+    (88s)
+
+  [9/12]  topo=ws  Z=2  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=82.3)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=80.7)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=82.2)
+    Persistence             0.0553±0.0121
+    Mean-Field ODE          0.0201±0.0081
+    Specialist-Low          0.7117±0.0149
+    Global-GAT              0.6132±0.0230
+    SpectralLSTM            0.0425±0.0129
+    PA-LSTM                 0.0857±0.0132
+    ZealotTransformer       0.0191±0.0073
+    (88s)
+
+  [10/12]  topo=ws  Z=8  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=75.6)
+    WARNING: PA-LSTM desc out of range (max=79.8)
+    WARNING: PA-LSTM desc out of range (max=80.3)
+    WARNING: PA-LSTM desc out of range (max=77.6)
+    WARNING: PA-LSTM desc out of range (max=80.3)
+    WARNING: PA-LSTM desc out of range (max=82.8)
+    WARNING: PA-LSTM desc out of range (max=83.3)
+    WARNING: PA-LSTM desc out of range (max=79.8)
+    WARNING: PA-LSTM desc out of range (max=79.3)
+    WARNING: PA-LSTM desc out of range (max=81.2)
+    Persistence             0.1932±0.0169
+    Mean-Field ODE          0.0619±0.0107
+    Specialist-Low          0.5936±0.0141
+    Global-GAT              0.4852±0.0206
+    SpectralLSTM            0.0498±0.0120
+    PA-LSTM                 0.2268±0.0161
+    ZealotTransformer       0.0231±0.0118
+    (88s)
+
+  [11/12]  topo=ws  Z=16  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=77.5)
+    WARNING: PA-LSTM desc out of range (max=80.4)
+    WARNING: PA-LSTM desc out of range (max=76.5)
+    WARNING: PA-LSTM desc out of range (max=78.5)
+    WARNING: PA-LSTM desc out of range (max=77.5)
+    WARNING: PA-LSTM desc out of range (max=80.9)
+    WARNING: PA-LSTM desc out of range (max=77.3)
+    WARNING: PA-LSTM desc out of range (max=80.4)
+    WARNING: PA-LSTM desc out of range (max=84.4)
+    WARNING: PA-LSTM desc out of range (max=82.2)
+    Persistence             0.3240±0.0208
+    Mean-Field ODE          0.0919±0.0128
+    Specialist-Low          0.4817±0.0210
+    Global-GAT              0.3763±0.0327
+    SpectralLSTM            0.0981±0.0191
+    PA-LSTM                 0.3627±0.0214
+    ZealotTransformer       0.0281±0.0170
+    (87s)
+
+  [12/12]  topo=ws  Z=32  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=78.8)
+    WARNING: PA-LSTM desc out of range (max=78.9)
+    WARNING: PA-LSTM desc out of range (max=80.0)
+    WARNING: PA-LSTM desc out of range (max=76.1)
+    WARNING: PA-LSTM desc out of range (max=75.5)
+    WARNING: PA-LSTM desc out of range (max=73.5)
+    WARNING: PA-LSTM desc out of range (max=77.1)
+    WARNING: PA-LSTM desc out of range (max=76.6)
+    WARNING: PA-LSTM desc out of range (max=76.2)
+    WARNING: PA-LSTM desc out of range (max=79.8)
+    Persistence             0.5049±0.0106
+    Mean-Field ODE          0.1396±0.0073
+    Specialist-Low          0.3251±0.0077
+    Global-GAT              0.2198±0.0182
+    SpectralLSTM            0.1720±0.0086
+    PA-LSTM                 0.5609±0.0105
+    ZealotTransformer       0.0139±0.0046
+    (87s)
+
+============================================================
+EXPERIMENT 2 + TABLE 2: Zealot Placement (BA only)
+============================================================
+
+  [1/12]  topo=ba  Z=2  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=79.4)
+    WARNING: PA-LSTM desc out of range (max=76.1)
+    WARNING: PA-LSTM desc out of range (max=79.5)
+    WARNING: PA-LSTM desc out of range (max=73.8)
+    WARNING: PA-LSTM desc out of range (max=82.3)
+    WARNING: PA-LSTM desc out of range (max=83.9)
+    WARNING: PA-LSTM desc out of range (max=82.4)
+    WARNING: PA-LSTM desc out of range (max=77.1)
+    WARNING: PA-LSTM desc out of range (max=83.8)
+    WARNING: PA-LSTM desc out of range (max=83.6)
+    Persistence             0.3814±0.0183
+    Mean-Field ODE          0.3378±0.0167
+    Specialist-Low          0.4640±0.3645
+    Global-GAT              0.2392±0.1382
+    SpectralLSTM            0.2668±0.0182
+    PA-LSTM                 0.2736±0.0267
+    ZealotTransformer       0.0250±0.0083
+    (89s)
+
+  [2/12]  topo=ba  Z=8  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=68.1)
+    WARNING: PA-LSTM desc out of range (max=67.6)
+    WARNING: PA-LSTM desc out of range (max=67.5)
+    WARNING: PA-LSTM desc out of range (max=60.4)
+    WARNING: PA-LSTM desc out of range (max=71.8)
+    WARNING: PA-LSTM desc out of range (max=75.7)
+    WARNING: PA-LSTM desc out of range (max=66.8)
+    WARNING: PA-LSTM desc out of range (max=70.5)
+    WARNING: PA-LSTM desc out of range (max=70.2)
+    WARNING: PA-LSTM desc out of range (max=73.1)
+    Persistence             0.6988±0.0110
+    Mean-Field ODE          0.5449±0.0111
+    Specialist-Low          0.1463±0.0690
+    Global-GAT              0.0903±0.0415
+    SpectralLSTM            0.2532±0.0089
+    PA-LSTM                 0.5347±0.0532
+    ZealotTransformer       0.0129±0.0060
+    (89s)
+
+  [3/12]  topo=ba  Z=16  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=41.5)
+    WARNING: PA-LSTM desc out of range (max=48.8)
+    WARNING: PA-LSTM desc out of range (max=54.2)
+    WARNING: PA-LSTM desc out of range (max=56.7)
+    WARNING: PA-LSTM desc out of range (max=43.8)
+    WARNING: PA-LSTM desc out of range (max=61.7)
+    WARNING: PA-LSTM desc out of range (max=53.3)
+    WARNING: PA-LSTM desc out of range (max=64.7)
+    WARNING: PA-LSTM desc out of range (max=55.1)
+    WARNING: PA-LSTM desc out of range (max=54.5)
+    Persistence             0.8092±0.0068
+    Mean-Field ODE          0.5416±0.0084
+    Specialist-Low          0.0928±0.0102
+    Global-GAT              0.0506±0.0117
+    SpectralLSTM            0.1742±0.0099
+    PA-LSTM                 0.3449±0.1098
+    ZealotTransformer       0.0090±0.0021
+    (89s)
+
+  [4/12]  topo=ba  Z=32  placement=hub  N=1024
+    WARNING: PA-LSTM desc out of range (max=47.0)
+    WARNING: PA-LSTM desc out of range (max=44.9)
+    WARNING: PA-LSTM desc out of range (max=39.0)
+    WARNING: PA-LSTM desc out of range (max=49.8)
+    WARNING: PA-LSTM desc out of range (max=44.7)
+    WARNING: PA-LSTM desc out of range (max=46.3)
+    WARNING: PA-LSTM desc out of range (max=38.6)
+    WARNING: PA-LSTM desc out of range (max=47.7)
+    WARNING: PA-LSTM desc out of range (max=42.2)
+    WARNING: PA-LSTM desc out of range (max=45.6)
+    Persistence             0.8624±0.0031
+    Mean-Field ODE          0.4469±0.0028
+    Specialist-Low          0.0965±0.0074
+    Global-GAT              0.0472±0.0104
+    SpectralLSTM            0.1316±0.0042
+    PA-LSTM                 0.1197±0.0230
+    ZealotTransformer       0.0099±0.0022
+    (88s)
+
+  [5/12]  topo=ba  Z=2  placement=bridge  N=1024
+    WARNING: PA-LSTM desc out of range (max=83.2)
+    WARNING: PA-LSTM desc out of range (max=69.2)
+    WARNING: PA-LSTM desc out of range (max=83.8)
+    WARNING: PA-LSTM desc out of range (max=80.6)
+    WARNING: PA-LSTM desc out of range (max=81.1)
+    WARNING: PA-LSTM desc out of range (max=83.0)
+    WARNING: PA-LSTM desc out of range (max=79.7)
+    WARNING: PA-LSTM desc out of range (max=82.2)
+    WARNING: PA-LSTM desc out of range (max=80.0)
+    WARNING: PA-LSTM desc out of range (max=82.5)
+    Persistence             0.3579±0.0257
+    Mean-Field ODE          0.3125±0.0248
+    Specialist-Low          0.4685±0.3285
+    Global-GAT              0.2276±0.1187
+    SpectralLSTM            0.2827±0.0206
+    PA-LSTM                 0.2726±0.0428
+    ZealotTransformer       0.0337±0.0069
+    (118s)
+
+  [6/12]  topo=ba  Z=8  placement=bridge  N=1024
+    WARNING: PA-LSTM desc out of range (max=65.3)
+    WARNING: PA-LSTM desc out of range (max=72.7)
+    WARNING: PA-LSTM desc out of range (max=59.2)
+    WARNING: PA-LSTM desc out of range (max=67.0)
+    WARNING: PA-LSTM desc out of range (max=64.5)
+    WARNING: PA-LSTM desc out of range (max=70.0)
+    WARNING: PA-LSTM desc out of range (max=73.1)
+    WARNING: PA-LSTM desc out of range (max=71.8)
+    WARNING: PA-LSTM desc out of range (max=71.1)
+    WARNING: PA-LSTM desc out of range (max=73.9)
+    Persistence             0.7084±0.0183
+    Mean-Field ODE          0.5535±0.0164
+    Specialist-Low          0.1357±0.0476
+    Global-GAT              0.0795±0.0216
+    SpectralLSTM            0.2439±0.0119
+    PA-LSTM                 0.5241±0.0634
+    ZealotTransformer       0.0174±0.0056
+    (117s)
+
+  [7/12]  topo=ba  Z=16  placement=bridge  N=1024
+    WARNING: PA-LSTM desc out of range (max=54.2)
+    WARNING: PA-LSTM desc out of range (max=55.5)
+    WARNING: PA-LSTM desc out of range (max=64.6)
+    WARNING: PA-LSTM desc out of range (max=60.0)
+    WARNING: PA-LSTM desc out of range (max=61.0)
+    WARNING: PA-LSTM desc out of range (max=54.2)
+    WARNING: PA-LSTM desc out of range (max=44.4)
+    WARNING: PA-LSTM desc out of range (max=60.2)
+    WARNING: PA-LSTM desc out of range (max=56.3)
+    WARNING: PA-LSTM desc out of range (max=51.5)
+    Persistence             0.8138±0.0102
+    Mean-Field ODE          0.5446±0.0095
+    Specialist-Low          0.1006±0.0191
+    Global-GAT              0.0604±0.0217
+    SpectralLSTM            0.1701±0.0090
+    PA-LSTM                 0.3816±0.0838
+    ZealotTransformer       0.0074±0.0019
+    (117s)
+
+  [8/12]  topo=ba  Z=32  placement=bridge  N=1024
+    WARNING: PA-LSTM desc out of range (max=47.0)
+    WARNING: PA-LSTM desc out of range (max=38.6)
+    WARNING: PA-LSTM desc out of range (max=39.2)
+    WARNING: PA-LSTM desc out of range (max=44.9)
+    WARNING: PA-LSTM desc out of range (max=43.3)
+    WARNING: PA-LSTM desc out of range (max=41.7)
+    WARNING: PA-LSTM desc out of range (max=46.0)
+    WARNING: PA-LSTM desc out of range (max=42.7)
+    WARNING: PA-LSTM desc out of range (max=40.3)
+    WARNING: PA-LSTM desc out of range (max=40.8)
+    Persistence             0.8646±0.0044
+    Mean-Field ODE          0.4503±0.0035
+    Specialist-Low          0.1008±0.0055
+    Global-GAT              0.0553±0.0225
+    SpectralLSTM            0.1292±0.0041
+    PA-LSTM                 0.1072±0.0161
+    ZealotTransformer       0.0088±0.0017
+    (116s)
+
+  [9/12]  topo=ba  Z=2  placement=random  N=1024
+    WARNING: PA-LSTM desc out of range (max=11.0)
+    Persistence             0.0408±0.0264
+    Mean-Field ODE          0.0344±0.0113
+    Specialist-Low          0.5427±0.1988
+    Global-GAT              0.1093±0.0244
+    SpectralLSTM            0.5918±0.0304
+    PA-LSTM                 0.0478±0.0225
+    ZealotTransformer       0.0263±0.0106
+    (89s)
+
+  [10/12]  topo=ba  Z=8  placement=random  N=1024
+    WARNING: PA-LSTM desc out of range (max=10.1)
+    Persistence             0.1716±0.0283
+    Mean-Field ODE          0.0514±0.0149
+    Specialist-Low          0.7124±0.2395
+    Global-GAT              0.1795±0.0490
+    SpectralLSTM            0.7330±0.0247
+    PA-LSTM                 0.1030±0.0402
+    ZealotTransformer       0.0300±0.0126
+    (89s)
+
+  [11/12]  topo=ba  Z=16  placement=random  N=1024
+    WARNING: PA-LSTM desc out of range (max=11.1)
+    Persistence             0.2969±0.0648
+    Mean-Field ODE          0.0986±0.0382
+    Specialist-Low          0.6853±0.3330
+    Global-GAT              0.2630±0.1029
+    SpectralLSTM            0.6391±0.0548
+    PA-LSTM                 0.0702±0.0387
+    ZealotTransformer       0.0255±0.0102
+    (89s)
+
+  [12/12]  topo=ba  Z=32  placement=random  N=1024
