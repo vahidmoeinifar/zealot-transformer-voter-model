@@ -11,3 +11,16 @@ https://lumi-supercomputer.github.io/LUMI-EasyBuild-docs/l/lumi-container-wrappe
 for more information. Take this information seriously as it can have legal
 consquences for you and your institution. 
 slurmstepd: error: *** JOB 18739123 ON nid005130 CANCELLED AT 2026-05-20T01:27:31 ***
+Traceback (most recent call last):
+  File "<stdin>", line 35, in <module>
+  File "<frozen runpy>", line 286, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/project_465002989/GNN_Project/4-compare_models.py", line 1054, in <module>
+    main()
+  File "/scratch/project_465002989/GNN_Project/4-compare_models.py", line 986, in main
+    write_text_table_1(results_topo,
+  File "/scratch/project_465002989/GNN_Project/4-compare_models.py", line 678, in write_text_table_1
+    best = _best_in_row(vals)
+           ^^^^^^^^^^^^
+NameError: name '_best_in_row' is not defined

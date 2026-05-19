@@ -1,0 +1,43 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# PyTorch models (too large)
+*.pth
+*.pt
+*.pkl
+
+# LUMI specific
+pyg-wrapper/
+pyg-packages/
+*.o
+*.log
+slurm-*.out
+slurm-*.err
+core*
+gpucore*
+*.core
+
+# Results (can be regenerated)
+saved_models/
+result/
+comparison_results/
+pyg-wrapper/
+pyg-packages/
+logs/
+__pycache__/
+*.png
+*.pdf
+*.csv
+
+# Unwanted files
+core
+exit
+gpucore.109455
+gpucore.33381
+gpucore.5779
+pyg_film.def
+pylaunch.py
+python
+tail

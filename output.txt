@@ -514,3 +514,12 @@ EXPERIMENT 2 + TABLE 2: Zealot Placement (BA only)
     (89s)
 
   [12/12]  topo=ba  Z=32  placement=random  N=1024
+    WARNING: PA-LSTM desc out of range (max=10.4)
+    Persistence             0.4803±0.0440
+    Mean-Field ODE          0.1392±0.0199
+    Specialist-Low          0.3991±0.3736
+    Global-GAT              0.2083±0.1526
+    SpectralLSTM            0.4856±0.0381
+    PA-LSTM                 0.0877±0.0361
+    ZealotTransformer       0.0236±0.0092
+    (88s)
