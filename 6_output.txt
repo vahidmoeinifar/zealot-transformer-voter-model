@@ -1,7 +1,7 @@
 ======================================================
- Job:     compare  (18743879)
- Node:    nid005392
- Started: Wed May 20 11:25:37 AM EEST 2026
+ Job:     compare  (18745595)
+ Node:    nid005236
+ Started: Wed May 20 01:43:00 PM EEST 2026
 ======================================================
 [modules] Loaded:
 
@@ -20,26 +20,3 @@ Currently Loaded Modules:
    S:  Module is Sticky, requires --force to unload or purge
 
 [check] Environment:
-torch:           2.9.1+rocm6.4
-torch_geometric: 2.7.0
-GPU available:   True
-GPU:             AMD Instinct MI250X  VRAM=68.7GB
-
-[check] Model files:
-  FOUND   /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt  (24M)
-  FOUND   /scratch/project_465002989/GNN_Project/saved_models/specialist_low_z2.pt  (804K)
-  FOUND   /scratch/project_465002989/GNN_Project/saved_models/Global-GAT.pt  (532K)
-  FOUND   /scratch/project_465002989/GNN_Project/saved_models/SpectralLSTM.pt  (4.3M)
-  FOUND   /scratch/project_465002989/GNN_Project/saved_models/pa-lstm.pt  (4.3M)
-
-[run] Wed May 20 11:26:45 AM EEST 2026
-------------------------------------------------------
-  [argv] skipping --spec_high_checkpoint (empty path)
-  [argv] skipping --mlp_desc_checkpoint (empty path)
-  [argv] 6_compare_models.py --zt_checkpoint /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt --out_dir /scratch/project_465002989/GNN_Project/result --n 1024 --mc_runs 128 --val_graphs 10 --seed 42 --eval_sizes --spec_low_checkpoint /scratch/project_465002989/GNN_Project/saved_models/specialist_low_z2.pt --global_gat_checkpoint /scratch/project_465002989/GNN_Project/saved_models/Global-GAT.pt --spectral_lstm_checkpoint /scratch/project_465002989/GNN_Project/saved_models/SpectralLSTM.pt --pa_lstm_checkpoint /scratch/project_465002989/GNN_Project/saved_models/pa-lstm.pt
-
-
-Device: cuda
-
-Loading models...
-  ✓ ZealotTransformer  epoch=300  best_RMSE=0.06360110508971574

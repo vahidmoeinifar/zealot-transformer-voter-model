@@ -1,85 +1,331 @@
+#!/usr/bin/env python3
 """
-compare_models.py
-=================
-Comparison script: ZealotTransformer vs all baseline and neural models.
+compare_models.py — LUMI version
+=================================
+Compares all neural models + baselines. Outputs 3 plain text tables + figures.
 
-Neural models (require saved checkpoints):
-  Specialist-Low, Specialist-High, Global-GAT,
-  SpectralLSTM, PA-LSTM, ZealotTransformer
+Tables:
+  table1_cross_topology.txt    — BA/ER/WS × Z ∈ {2,8,16,32}, hub placement
+  table2_zealot_placement.txt  — BA, Hub / Bridge / Random × Z ∈ {2,8,16,32}
+  table3_size_generalization.txt — all topologies × N ∈ {256,512,1024,2048,4096}
 
-Baselines (no checkpoint needed):
-  Persistence, Mean-Field ODE, MLP-Descriptor
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OUTPUT STRUCTURE  (all inside --out_dir)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-tables/
-  table1_ba_hub.txt
-      BA, hub placement, Z∈{2,8,16,32}
-      Rows = Z  |  Columns = models
-
-  table2_ba_placement.txt
-      BA, hub vs random vs bridge, Z∈{2,8,16,32}
-      Rows = models  |  Columns = placement/Z pairs
-
-  table3_ba_size.txt   (only when --eval_sizes is set)
-      BA, hub placement, N∈{256,512,1024,2048,4096}, Z=8
-      Rows = N  |  Columns = models
-
-figures/
-  ba_trajectories_gt_vs_zt.pdf / .png
-      Ground Truth vs ZealotTransformer, Z∈{2,8,16,32}
-      Scientific Reports style (no title)
-
-trajectories/
-  trajectories_ba_<placement>_Z<z>_N<n>.json
-
-results_raw.json
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Usage
------
-  python compare_models.py --zt_checkpoint saved_models/zealot_transformer.pt
-  python compare_models.py --zt_checkpoint ... --eval_sizes
+Author: Vahid Moeinifar (AGH University of Science and Technology)
 """
 
 import os, sys, json, time, argparse, warnings
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import networkx as nx
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import networkx as nx
-import torch
-import torch.nn as nn
 from scipy.integrate import odeint
 from scipy.sparse.linalg import eigsh
+from torch_geometric.nn import GATConv
+from torch_geometric.utils import from_networkx
 
 warnings.filterwarnings("ignore")
 
-# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────
 # Constants
-# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────
 ALL_Z         = [2, 8, 16, 32]
 SIZE_LIST     = [256, 512, 1024, 2048, 4096]
+TRAIN_N       = 1024
 T_STEPS       = 50
 NODE_FEAT_DIM = 5
-# All evaluation is BA-only; placements used in Table 1 & 2
-PLACEMENTS    = ["hub", "random", "bridge"]
+TOPOLOGIES    = ["ba", "er", "ws"]
 
-# Scientific Reports figure style
-PANEL_FONT  = 8;  AXIS_FONT = 8;  TICK_FONT = 7;  LEGEND_FONT = 7
-LINE_WIDTH  = 1.2
-FIG_W_IN    = 180 / 25.4
+TOPO_LABELS = {
+    "ba": "Barabási–Albert",
+    "er": "Erdős–Rényi",
+    "ws": "Watts–Strogatz",
+}
 
-MODEL_ORDER = [
-    "Persistence", "Mean-Field ODE", "MLP-Descriptor",
-    "Specialist-Low", "Specialist-High", "Global-GAT",
+# Short names for table column headers
+TABLE_MODELS = [
+    "Persistence", "Mean-Field ODE",
+    "Specialist-Low", "Global-GAT",
     "SpectralLSTM", "PA-LSTM", "ZealotTransformer",
 ]
+TABLE_HEADERS = {
+    "Persistence":       "Persist.",
+    "Mean-Field ODE":    "Mean-Field",
+    "Specialist-Low":    "Spec-Low",
+    "Global-GAT":        "Global-GAT",
+    "SpectralLSTM":      "Spec-LSTM",
+    "PA-LSTM":           "PA-LSTM",
+    "ZealotTransformer": "ZT",
+}
 
-# ─────────────────────────────────────────────────────────────────────────────
+FIG_W_IN = 180 / 25.4
+
+
+# ═════════════════════════════════════════════════════════════
+# Model architectures — must exactly match training scripts
+# ═════════════════════════════════════════════════════════════
+
+class LocalGATModel(nn.Module):
+    """Specialist-Low / Specialist-High"""
+    def __init__(self, hidden_dim=256, dropout=0.1):
+        super().__init__()
+        self.dropout = dropout
+        out_ch = hidden_dim // 4
+        self.conv1 = GATConv(3,          out_ch, heads=4, dropout=dropout)
+        self.ln1   = nn.LayerNorm(hidden_dim)
+        self.conv2 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
+        self.ln2   = nn.LayerNorm(hidden_dim)
+        self.conv3 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
+        self.ln3   = nn.LayerNorm(hidden_dim)
+        self.conv4 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
+        self.ln4   = nn.LayerNorm(hidden_dim)
+        self.out   = GATConv(hidden_dim, 1, heads=1, concat=False, dropout=dropout)
+
+    def forward(self, x, edge_index):
+        h  = F.elu(self.conv1(x, edge_index)); h = self.ln1(h)
+        h  = F.dropout(h, p=self.dropout, training=self.training)
+        h1 = F.elu(self.conv2(h, edge_index)); h = self.ln2(h + h1)
+        h  = F.dropout(h, p=self.dropout, training=self.training)
+        h2 = F.elu(self.conv3(h, edge_index)); h = self.ln3(h + h2)
+        h  = F.dropout(h, p=self.dropout, training=self.training)
+        h3 = F.elu(self.conv4(h, edge_index)); h = self.ln4(h + h3)
+        h  = F.dropout(h, p=self.dropout, training=self.training)
+        return torch.sigmoid(self.out(h, edge_index)).squeeze(-1)
+
+
+class GlobalGATModel(nn.Module):
+    """Global-GAT — no LayerNorm"""
+    def __init__(self, hidden_dim=256, dropout=0.1):
+        super().__init__()
+        self.dropout = dropout
+        out_ch = hidden_dim // 4
+        self.conv1 = GATConv(3,          out_ch, heads=4, dropout=dropout)
+        self.conv2 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
+        self.conv3 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
+        self.out   = GATConv(hidden_dim, 1, heads=1, concat=False, dropout=dropout)
+
+    def forward(self, x, edge_index):
+        x = F.elu(self.conv1(x, edge_index))
+        x = F.elu(self.conv2(x, edge_index))
+        x = F.elu(self.conv3(x, edge_index))
+        return torch.sigmoid(self.out(x, edge_index)).squeeze(-1)
+
+
+class TrajectoryLSTM(nn.Module):
+    """SpectralLSTM — universal_lstm.pt"""
+    def __init__(self, desc_dim=8, hidden_dim=256, num_layers=2,
+                 T=T_STEPS, dropout=0.1):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.T          = T
+        self.encoder = nn.Sequential(
+            nn.Linear(desc_dim, 128), nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(128, 256),      nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(256, num_layers * hidden_dim * 2))
+        self.lstm = nn.LSTM(1, hidden_dim, num_layers, batch_first=True,
+                            dropout=dropout if num_layers > 1 else 0.0)
+        self.output_head = nn.Sequential(
+            nn.Linear(hidden_dim, 64), nn.ReLU(),
+            nn.Linear(64, 1), nn.Sigmoid())
+
+    def forward(self, descriptors):
+        B   = descriptors.shape[0]
+        enc = self.encoder(descriptors)
+        enc = enc.view(B, self.num_layers, self.hidden_dim * 2)
+        h0  = enc[:, :, :self.hidden_dim].permute(1, 0, 2).contiguous()
+        c0  = enc[:, :, self.hidden_dim:].permute(1, 0, 2).contiguous()
+        inp = torch.full((B, 1, 1), 0.5, device=descriptors.device)
+        preds = []
+        h, c = h0, c0
+        for _ in range(self.T):
+            out, (h, c) = self.lstm(inp, (h, c))
+            pred_t = self.output_head(out.squeeze(1))
+            preds.append(pred_t)
+            inp = pred_t.detach().unsqueeze(1)
+        return torch.cat(preds, dim=1)   # (B, T) in [0,1]
+
+
+class PALSTMModel(nn.Module):
+    """PA-LSTM — pa-lstm.pt, 11D descriptor"""
+    def __init__(self, desc_dim=11, hidden_dim=256, num_layers=2,
+                 T=T_STEPS, dropout=0.1):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.T          = T
+        self.encoder = nn.Sequential(
+            nn.Linear(desc_dim, 128), nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(128, 256),      nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(256, num_layers * hidden_dim * 2))
+        self.lstm = nn.LSTM(1, hidden_dim, num_layers, batch_first=True,
+                            dropout=dropout if num_layers > 1 else 0.0)
+        self.output_head = nn.Sequential(
+            nn.Linear(hidden_dim, 64), nn.ReLU(),
+            nn.Linear(64, 1), nn.Sigmoid())
+
+    def forward(self, descriptors):
+        B   = descriptors.shape[0]
+        enc = self.encoder(descriptors)
+        enc = enc.view(B, self.num_layers, self.hidden_dim * 2)
+        h0  = enc[:, :, :self.hidden_dim].permute(1, 0, 2).contiguous()
+        c0  = enc[:, :, self.hidden_dim:].permute(1, 0, 2).contiguous()
+        inp = torch.full((B, 1, 1), 0.5, device=descriptors.device)
+        preds = []
+        h, c = h0, c0
+        for _ in range(self.T):
+            out, (h, c) = self.lstm(inp, (h, c))
+            pred_t = self.output_head(out.squeeze(1))
+            preds.append(pred_t)
+            inp = pred_t.detach().unsqueeze(1)
+        return torch.cat(preds, dim=1)
+
+
+class ZealotTransformer(nn.Module):
+    """ZealotTransformer — zealot_transformer.pt"""
+    def __init__(self, node_feat_dim=NODE_FEAT_DIM, d_model=128,
+                 nhead=4, num_transformer_layers=3,
+                 lstm_hidden=256, lstm_layers=2, T=T_STEPS, dropout=0.0):
+        super().__init__()
+        self.d_model     = d_model
+        self.T           = T
+        self.lstm_hidden = lstm_hidden
+        self.lstm_layers = lstm_layers
+        self.node_encoder = nn.Sequential(
+            nn.Linear(node_feat_dim, d_model),
+            nn.LayerNorm(d_model), nn.GELU())
+        enc_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=nhead, dim_feedforward=d_model * 4,
+            dropout=dropout, batch_first=True, norm_first=True, activation="gelu")
+        self.transformer = nn.TransformerEncoder(
+            enc_layer, num_layers=num_transformer_layers,
+            enable_nested_tensor=False)
+        self.ctx_projector = nn.Sequential(
+            nn.Linear(2 * d_model, lstm_hidden * 2), nn.GELU(),
+            nn.Linear(lstm_hidden * 2, lstm_layers * lstm_hidden * 2))
+        self.lstm = nn.LSTM(1, lstm_hidden, lstm_layers, batch_first=True,
+                            dropout=dropout if lstm_layers > 1 else 0.0)
+        self.output_head = nn.Sequential(
+            nn.Linear(lstm_hidden, 64), nn.GELU(),
+            nn.Linear(64, 1), nn.Sigmoid())
+
+    def encode_graph_batch(self, X, zm, pm):
+        H   = self.node_encoder(X)
+        H   = self.transformer(H, src_key_padding_mask=~pm)
+        zmk = zm & pm
+        zp  = (H * zmk.unsqueeze(-1)).sum(1) / zmk.sum(1, keepdim=True).clamp(1)
+        nzk = (~zm) & pm
+        np_ = (H * nzk.unsqueeze(-1)).sum(1) / nzk.sum(1, keepdim=True).clamp(1)
+        return torch.cat([zp, np_], dim=-1)
+
+    def decode_batch(self, ctx):
+        B    = ctx.shape[0]
+        proj = self.ctx_projector(ctx).view(
+            B, self.lstm_layers, self.lstm_hidden * 2)
+        h0  = proj[:, :, :self.lstm_hidden].transpose(0, 1).contiguous()
+        c0  = proj[:, :, self.lstm_hidden:].transpose(0, 1).contiguous()
+        inp = torch.full((B, 1, 1), 0.5, device=ctx.device)
+        preds, h, c = [], h0, c0
+        for _ in range(self.T):
+            out, (h, c) = self.lstm(inp, (h, c))
+            p = self.output_head(out)
+            preds.append(p)
+            inp = p.detach()
+        return torch.cat(preds, dim=1).squeeze(-1)
+
+    def forward(self, X, zm):
+        pm  = torch.ones(1, X.shape[0], dtype=torch.bool, device=X.device)
+        ctx = self.encode_graph_batch(X.unsqueeze(0), zm.unsqueeze(0), pm)
+        return self.decode_batch(ctx).squeeze(0) * 2 - 1   # → [-1,1]
+
+
+# ═════════════════════════════════════════════════════════════
+# Model loading
+# ═════════════════════════════════════════════════════════════
+
+def _clean(sd):
+    return {k.replace("_orig_mod.", "").replace("module.", ""): v
+            for k, v in sd.items()}
+
+
+def load_local_gat(path, device, label):
+    ckpt  = torch.load(path, map_location=device, weights_only=False)
+    hp    = ckpt.get("hyperparams", {})
+    model = LocalGATModel(hidden_dim=hp.get("hidden_dim", 256),
+                          dropout=hp.get("dropout", 0.1))
+    model.load_state_dict(_clean(ckpt["model_state_dict"]), strict=True)
+    print(f"  ✓ {label}: {path}")
+    return model.to(device).eval()
+
+
+def load_global_gat(path, device):
+    ckpt  = torch.load(path, map_location=device, weights_only=False)
+    hp    = ckpt.get("hyperparams", {})
+    model = GlobalGATModel(hidden_dim=hp.get("hidden_dim", 256),
+                           dropout=hp.get("dropout", 0.0))
+    model.load_state_dict(_clean(ckpt["model_state_dict"]), strict=True)
+    print(f"  ✓ Global-GAT: {path}")
+    return model.to(device).eval()
+
+
+def load_spectral_lstm(path, device):
+    ckpt       = torch.load(path, map_location=device, weights_only=False)
+    hp         = ckpt.get("hyperparams", {})
+    norm_stats = ckpt.get("norm_stats", None)
+    model      = TrajectoryLSTM(
+        desc_dim   = hp.get("desc_dim",   8),
+        hidden_dim = hp.get("hidden_dim", 256),
+        num_layers = hp.get("num_layers", 2),
+        T          = hp.get("T", T_STEPS),
+        dropout    = 0.1)
+    model.load_state_dict(_clean(ckpt["model_state_dict"]), strict=False)
+    print(f"  ✓ SpectralLSTM: {path}")
+    if norm_stats is None:
+        print("    WARNING: no norm_stats in checkpoint")
+    return model.to(device).eval(), norm_stats
+
+
+def load_pa_lstm(path, device):
+    ckpt       = torch.load(path, map_location=device, weights_only=False)
+    hp         = ckpt.get("hyperparams", {})
+    norm_stats = ckpt.get("norm_stats", None)
+    model      = PALSTMModel(
+        desc_dim   = hp.get("desc_dim",   11),
+        hidden_dim = hp.get("hidden_dim", 256),
+        num_layers = hp.get("num_layers", 2),
+        T          = hp.get("T", T_STEPS),
+        dropout    = 0.1)
+    model.load_state_dict(_clean(ckpt["model_state_dict"]), strict=False)
+    print(f"  ✓ PA-LSTM: {path}  (desc_dim={hp.get('desc_dim', 11)})")
+    if norm_stats is None:
+        print("    WARNING: no norm_stats in checkpoint")
+    return model.to(device).eval(), norm_stats
+
+
+def load_zt(path, device):
+    ckpt  = torch.load(path, map_location=device, weights_only=False)
+    hp    = ckpt.get("hyperparams", {})
+    model = ZealotTransformer(
+        node_feat_dim         = hp.get("node_feat_dim", NODE_FEAT_DIM),
+        d_model               = hp.get("d_model", 128),
+        nhead                 = hp.get("nhead", 4),
+        num_transformer_layers= hp.get("num_transformer_layers", 3),
+        lstm_hidden           = hp.get("lstm_hidden", 256),
+        lstm_layers           = hp.get("lstm_layers", 2),
+        T                     = hp.get("T", T_STEPS),
+        dropout               = 0.0)
+    model.load_state_dict(_clean(ckpt["model_state_dict"]), strict=True)
+    best = ckpt.get("best_val_rmse", "?")
+    print(f"  ✓ ZealotTransformer: {path}  "
+          f"(epoch={ckpt.get('epoch','?')}  best_RMSE={best})")
+    return model.to(device).eval()
+
+
+# ═════════════════════════════════════════════════════════════
 # Graph / simulation helpers
-# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════
 
 def make_graph(topo, n, m=8, seed=None):
     if topo == "ba":
@@ -87,9 +333,10 @@ def make_graph(topo, n, m=8, seed=None):
     elif topo == "er":
         p = min(2 * m / (n - 1), 1.0)
         for attempt in range(10):
-            G = nx.erdos_renyi_graph(n, p,
-                seed=(seed + attempt if seed is not None else None))
-            if nx.is_connected(G): break
+            G = nx.erdos_renyi_graph(
+                n, p, seed=(seed + attempt if seed is not None else None))
+            if nx.is_connected(G):
+                break
     elif topo == "ws":
         G = nx.watts_strogatz_graph(n, max(4, 2 * m), p=0.1, seed=seed)
     else:
@@ -105,879 +352,701 @@ def place_hubs(G, Z):
                sorted(G.degree(), key=lambda x: x[1], reverse=True)[:Z])
 
 
-def place_random(G, Z, rng):
-    return set(int(n) for n in rng.choice(list(G.nodes()), size=Z, replace=False))
-
-
 def place_bridges(G, Z):
-    """Nodes with highest betweenness centrality."""
     btwn = nx.betweenness_centrality(G, normalized=True)
     return set(sorted(btwn, key=btwn.get, reverse=True)[:Z])
 
 
-def simulate_trajectory(G, zealot_set, T=T_STEPS, mc_runs=20, seed=None):
-    rng  = np.random.default_rng(seed)
-    N_g  = G.number_of_nodes()
-    adj  = [list(G.neighbors(i)) for i in range(N_g)]
-    is_z = np.zeros(N_g, dtype=bool)
-    for z in zealot_set: is_z[z] = True
+def place_random(G, Z, rng):
+    return set(int(n) for n in
+               rng.choice(list(G.nodes()), size=Z, replace=False))
+
+
+def get_zealot_set(G, placement, Z, rng):
+    if placement == "hub":
+        return place_hubs(G, Z)
+    elif placement == "bridge":
+        return place_bridges(G, Z)
+    else:
+        return place_random(G, Z, rng)
+
+
+def simulate_trajectory(G, zealot_set, T=T_STEPS, mc_runs=128, seed=None):
+    rng   = np.random.default_rng(seed)
+    N_g   = G.number_of_nodes()
+    adj   = [list(G.neighbors(i)) for i in range(N_g)]
+    is_z  = np.zeros(N_g, dtype=bool)
+    for z in zealot_set:
+        is_z[z] = True
     non_z = np.where(~is_z)[0]
-    all_t = np.zeros((mc_runs, T), dtype=np.float32)
-    for run in range(mc_runs):
-        ops = rng.choice([-1.0, 1.0], size=N_g).astype(np.float32)
-        ops[is_z] = 1.0
+    trajs = np.zeros((mc_runs, T), dtype=np.float32)
+    for r in range(mc_runs):
+        ops = rng.choice([-1., 1.], size=N_g).astype(np.float32)
+        ops[is_z] = 1.
         for t in range(T):
-            all_t[run, t] = float(ops.mean())
+            trajs[r, t] = ops.mean()
             chosen = rng.choice(non_z, size=len(non_z), replace=True)
-            for node in chosen:
-                nbrs = adj[node]
-                if nbrs: ops[node] = ops[nbrs[rng.integers(0, len(nbrs))]]
-            ops[is_z] = 1.0
-    return np.mean(all_t, axis=0).astype(np.float32)
+            for nd in chosen:
+                nbrs = adj[nd]
+                if nbrs:
+                    ops[nd] = ops[nbrs[rng.integers(0, len(nbrs))]]
+            ops[is_z] = 1.
+    return trajs.mean(axis=0)
 
 
-def compute_fiedler_vector(G):
+# ═════════════════════════════════════════════════════════════
+# Descriptors
+# ═════════════════════════════════════════════════════════════
+
+def _spectral_gap(G):
+    try:
+        n    = G.number_of_nodes()
+        L    = nx.laplacian_matrix(G).astype(float)
+        vals = eigsh(L, k=min(3, n-1), which="SM",
+                     return_eigenvectors=False, tol=1e-2, maxiter=1000)
+        return float(sorted(vals)[1]) if len(vals) > 1 else 0.0
+    except Exception:
+        return 0.0
+
+
+def compute_spectral_desc_8d(G, Z, n, topo):
+    """8D descriptor for SpectralLSTM — must match universal_lstm training."""
+    deg  = np.array([d for _, d in G.degree()], dtype=np.float64)
+    mu   = deg.mean()
+    return np.array([
+        Z / n,
+        _spectral_gap(G),
+        mu / n,
+        deg.std() / (mu + 1e-8),
+        nx.average_clustering(G),
+        1.0 if topo == "ba" else 0.0,
+        1.0 if topo == "er" else 0.0,
+        1.0 if topo == "ws" else 0.0,
+    ], dtype=np.float32)
+
+
+def _fiedler_vector(G):
+    """Returns Fiedler vector (N,), normalised to [-1,1]."""
     n = G.number_of_nodes()
+    deg = np.array([d for _, d in G.degree()], dtype=np.float32)
     if n > 500:
-        d = np.array([deg for _, deg in G.degree()], dtype=np.float32)
-        return (d / (d.max() + 1e-8)).astype(np.float32)
+        return deg / (deg.max() + 1e-8)
     try:
         L    = nx.laplacian_matrix(G).astype(float)
-        nev  = min(3, n - 1)
-        vals, vecs = eigsh(L, k=nev, which="SM", tol=1e-2, maxiter=1000)
-        f    = vecs[:, np.argsort(vals)[1]]
-        mx   = np.abs(f).max()
-        if mx > 1e-8: f /= mx
-        return f.astype(np.float32)
+        vals, vecs = eigsh(L, k=min(3, n-1), which="SM",
+                           tol=1e-2, maxiter=1000)
+        f  = vecs[:, np.argsort(vals)[1]]
+        mx = np.abs(f).max()
+        return (f / mx).astype(np.float32) if mx > 1e-8 else f.astype(np.float32)
     except Exception:
-        d = np.array([deg for _, deg in G.degree()], dtype=np.float32)
-        return (d / (d.max() + 1e-8)).astype(np.float32)
+        return deg / (deg.max() + 1e-8)
 
 
-def compute_node_features(G, zealot_set):
-    N_g  = G.number_of_nodes()
-    degs = np.array([d for _, d in G.degree()], dtype=np.float32)
-    dn   = degs / (degs.max() + 1e-8)
-    z_i  = np.zeros(N_g, dtype=np.float32)
-    for nd in zealot_set: z_i[nd] = 1.0
-    fv   = compute_fiedler_vector(G)
+def compute_pa_desc_11d(G, Z, n, topo, zealot_set):
+    """
+    11D descriptor for PA-LSTM.
+    Must match train_placement_aware_lstm.py EXACTLY:
+      9.  hub_score    = mean_deg(zealots) / mean_deg(all)
+      10. bridge_score = mean_btwn(zealots) / mean_btwn(all)
+      11. fiedler_score = mean|fiedler[zealots]|
+    """
+    base    = compute_spectral_desc_8d(G, Z, n, topo)
+    degrees = np.array([d for _, d in G.degree()], dtype=np.float64)
+    mean_deg = degrees.mean()
+    zealot_list = list(zealot_set)
+
+    hub_score = float(degrees[zealot_list].mean() / (mean_deg + 1e-8)) \
+                if zealot_list else 1.0
+
     try:
-        if N_g > 1000:
-            pr = dn.copy()
-        else:
+        btwn      = nx.betweenness_centrality(G, normalized=True, endpoints=False)
+        btwn_vals = np.array(list(btwn.values()), dtype=np.float64)
+        mean_btwn = btwn_vals.mean()
+        bridge_score = float(np.mean([btwn[z] for z in zealot_list]) /
+                             (mean_btwn + 1e-10)) if zealot_list else 1.0
+    except Exception:
+        bridge_score = 1.0
+
+    fiedler = _fiedler_vector(G)
+    fiedler_score = float(np.abs(fiedler[zealot_list]).mean()) \
+                    if zealot_list and len(fiedler) == n else 0.0
+
+    return np.concatenate([base, [hub_score, bridge_score, fiedler_score]]) \
+               .astype(np.float32)
+
+
+def compute_node_features_5d(G, zealot_set):
+    """5D node features for ZealotTransformer."""
+    N_g   = G.number_of_nodes()
+    deg   = np.array([d for _, d in G.degree()], dtype=np.float32)
+    deg_n = deg / (deg.max() + 1e-8)
+    z_i   = np.zeros(N_g, dtype=np.float32)
+    for nd in zealot_set:
+        z_i[nd] = 1.0
+    fiedler = _fiedler_vector(G)
+    # PageRank proxy = degree (exact PageRank too slow at N=2048+)
+    pr = deg_n.copy()
+    try:
+        if N_g <= 1000:
             prd = nx.pagerank(G, alpha=0.85, max_iter=50, tol=1e-3)
             pr  = np.array([prd[i] for i in range(N_g)], dtype=np.float32)
             pr /= (pr.max() + 1e-8)
     except Exception:
-        pr = dn.copy()
+        pass
     try:
-        cd  = nx.clustering(G)
-        cl  = np.array([cd[i] for i in range(N_g)], dtype=np.float32)
+        cd    = nx.clustering(G)
+        clust = np.array([cd[i] for i in range(N_g)], dtype=np.float32)
     except Exception:
-        cl  = np.zeros(N_g, dtype=np.float32)
-    return np.stack([z_i, dn, fv, pr, cl], axis=1).astype(np.float32)
+        clust = np.zeros(N_g, dtype=np.float32)
+    return np.stack([z_i, deg_n, fiedler, pr, clust], axis=1).astype(np.float32)
 
 
-def compute_spectral_descriptor(G, Z, N, topo):
-    rho_Z = Z / N
-    d     = np.array([deg for _, deg in G.degree()], dtype=np.float64)
-    mu_k  = d.mean(); cv_k = d.std() / (mu_k + 1e-8)
-    try:
-        L    = nx.laplacian_matrix(G).astype(float)
-        vals = eigsh(L, k=min(3, N-1), which="SM", tol=1e-2,
-                     return_eigenvectors=False, maxiter=1000)
-        lam2 = sorted(vals)[1] if len(vals) > 1 else 0.0
-    except Exception:
-        lam2 = 0.0
-    try:    C = nx.average_clustering(G)
-    except: C = 0.0
-    tv = [1.0 if topo == "ba" else 0.0,
-          1.0 if topo == "er" else 0.0,
-          1.0 if topo == "ws" else 0.0]
-    return np.array([rho_Z, lam2, mu_k / N, cv_k, C] + tv, dtype=np.float32)
+def normalize_desc(desc, stats):
+    if stats is None:
+        return desc
+    mean = np.asarray(stats[0], dtype=np.float32)
+    std  = np.asarray(stats[1], dtype=np.float32)
+    return (desc - mean) / (std + 1e-8)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Model architectures  (stubs — replace forward() with your actual classes)
-# ─────────────────────────────────────────────────────────────────────────────
-
-class ZealotTransformer(nn.Module):
-    def __init__(self, node_feat_dim=NODE_FEAT_DIM, d_model=128,
-                 nhead=4, num_transformer_layers=3,
-                 lstm_hidden=256, lstm_layers=2, T=T_STEPS, dropout=0.1):
-        super().__init__()
-        self.d_model = d_model; self.T = T
-        self.lstm_hidden = lstm_hidden; self.lstm_layers = lstm_layers
-        self.node_encoder = nn.Sequential(
-            nn.Linear(node_feat_dim, d_model), nn.LayerNorm(d_model), nn.GELU())
-        enc_layer = nn.TransformerEncoderLayer(
-            d_model=d_model, nhead=nhead, dim_feedforward=d_model*4,
-            dropout=dropout, batch_first=True, norm_first=True, activation="gelu")
-        self.transformer = nn.TransformerEncoder(
-            enc_layer, num_layers=num_transformer_layers, enable_nested_tensor=False)
-        self.ctx_projector = nn.Sequential(
-            nn.Linear(2*d_model, lstm_hidden*2), nn.GELU(),
-            nn.Linear(lstm_hidden*2, lstm_layers*lstm_hidden*2))
-        self.lstm = nn.LSTM(1, lstm_hidden, lstm_layers, batch_first=True,
-                            dropout=dropout if lstm_layers > 1 else 0.0)
-        self.output_head = nn.Sequential(
-            nn.Linear(lstm_hidden, 64), nn.GELU(), nn.Linear(64, 1), nn.Sigmoid())
-
-    def encode_graph_batch(self, X, zm, pm):
-        H  = self.node_encoder(X)
-        H  = self.transformer(H, src_key_padding_mask=~pm)
-        zmk = zm & pm
-        zp  = (H * zmk.unsqueeze(-1)).sum(1) / zmk.sum(1, keepdim=True).clamp(1)
-        nzk = (~zm) & pm
-        np_ = (H * nzk.unsqueeze(-1)).sum(1) / nzk.sum(1, keepdim=True).clamp(1)
-        return torch.cat([zp, np_], dim=-1)
-
-    def decode_batch(self, ctx):
-        B   = ctx.shape[0]
-        proj = self.ctx_projector(ctx).view(B, self.lstm_layers, self.lstm_hidden*2)
-        h0  = proj[:, :, :self.lstm_hidden].transpose(0,1).contiguous()
-        c0  = proj[:, :, self.lstm_hidden:].transpose(0,1).contiguous()
-        inp = torch.full((B,1,1), 0.5, device=ctx.device)
-        preds, h, c = [], h0, c0
-        for _ in range(self.T):
-            out, (h,c) = self.lstm(inp, (h,c))
-            p = self.output_head(out); preds.append(p); inp = p.detach()
-        return torch.cat(preds, dim=1).squeeze(-1)
-
-    def forward(self, X, zm):
-        pm  = torch.ones(1, X.shape[0], dtype=torch.bool, device=X.device)
-        ctx = self.encode_graph_batch(X.unsqueeze(0), zm.unsqueeze(0), pm)
-        return self.decode_batch(ctx).squeeze(0) * 2 - 1
-
-
-class SpectralLSTMModel(nn.Module):
-    def __init__(self, desc_dim=8, hidden_dim=256, num_layers=2, T=T_STEPS, dropout=0.1):
-        super().__init__()
-        self.T          = T
-        self.hidden_dim = hidden_dim
-        self.num_layers = num_layers
-        self.encoder = nn.Sequential(
-            nn.Linear(desc_dim, 128), nn.ReLU(), nn.Dropout(dropout),
-            nn.Linear(128, 256),      nn.ReLU(), nn.Dropout(dropout),
-            nn.Linear(256, num_layers * hidden_dim * 2))
-        self.lstm = nn.LSTM(1, hidden_dim, num_layers, batch_first=True,
-                            dropout=dropout if num_layers > 1 else 0.0)
-        self.output_head = nn.Sequential(
-            nn.Linear(hidden_dim, 64), nn.ReLU(),
-            nn.Linear(64, 1), nn.Sigmoid())
-
-    def forward(self, d):
-        enc = self.encoder(d).view(self.num_layers, 1, self.hidden_dim * 2)
-        h0  = enc[:, :, :self.hidden_dim].contiguous()
-        c0  = enc[:, :, self.hidden_dim:].contiguous()
-        inp = torch.full((1, 1, 1), 0.5, device=d.device)
-        preds, h, c = [], h0, c0
-        for _ in range(self.T):
-            out, (h, c) = self.lstm(inp, (h, c))
-            p = self.output_head(out.squeeze(0))
-            preds.append(p)
-            inp = p.detach().unsqueeze(0)
-        return torch.cat(preds, 0).squeeze() * 2 - 1
-
-class PALSTMModel(nn.Module):
-    def __init__(self, desc_dim=11, lstm_hidden=256, lstm_layers=2, T=T_STEPS):
-        super().__init__()
-        self.T=T; self.lh=lstm_hidden; self.ll=lstm_layers
-        self.enc = nn.Sequential(
-            nn.Linear(desc_dim,128), nn.GELU(),
-            nn.Linear(128,256), nn.GELU(),
-            nn.Linear(256, lstm_layers*lstm_hidden*2))
-        self.lstm = nn.LSTM(1, lstm_hidden, lstm_layers, batch_first=True,
-                            dropout=0.1 if lstm_layers>1 else 0.0)
-        self.head = nn.Sequential(nn.Linear(lstm_hidden,64), nn.GELU(),
-                                  nn.Linear(64,1), nn.Sigmoid())
-    def forward(self, d):
-        proj = self.enc(d).view(self.ll, 1, self.lh*2)
-        h0 = proj[:,:,:self.lh].contiguous()
-        c0 = proj[:,:,self.lh:].contiguous()
-        inp = torch.full((1,1,1), 0.5, device=d.device)
-        preds, h, c = [], h0, c0
-        for _ in range(self.T):
-            out,(h,c) = self.lstm(inp,(h,c)); p=self.head(out)
-            preds.append(p); inp=p.detach()
-        return torch.cat(preds,1).squeeze()*2-1
-
-
-class GATModel(nn.Module):
-    def __init__(self, node_dim=3, hidden=256, heads=4, layers=4, T=T_STEPS):
-        super().__init__()
-        self.T = T
-        self.net = nn.Sequential(
-            nn.Linear(node_dim, hidden), nn.GELU(),
-            nn.Linear(hidden, hidden), nn.GELU(),
-            nn.Linear(hidden, T), nn.Sigmoid())
-    def forward(self, X):
-        return self.net(X).mean(dim=0)*2-1
-
-
-# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════
 # Baselines
-# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════
 
-def persistence_predict(m0, T):
+def predict_persistence(m0, T=T_STEPS):
     return np.full(T, m0, dtype=np.float32)
 
 
-def meanfield_predict(rho_Z, m0, T, alpha=0.08, beta=2.5):
-    def ode(m, t): return -alpha * m + beta * rho_Z * (1 - m)
-    t_grid = np.linspace(0, T - 1, T)
-    sol    = odeint(ode, [m0], t_grid)
+def predict_meanfield(rho_Z, m0, T=T_STEPS, alpha=0.08, beta=2.5):
+    def ode(m, t):
+        return -alpha * m + beta * rho_Z * (1 - m)
+    sol = odeint(ode, [m0], np.linspace(0, T - 1, T))
     return np.clip(sol.squeeze(), -1, 1).astype(np.float32)
 
 
-class MLPDescriptorModel:
-    def __init__(self, checkpoint_path=None, T=T_STEPS, device="cpu"):
-        self.T=T; self.device=device; self.net=None
-        if checkpoint_path and os.path.isfile(checkpoint_path):
-            ckpt   = torch.load(checkpoint_path, map_location=device, weights_only=False)
-            in_dim = ckpt.get("desc_dim", 8)
-            net    = nn.Sequential(
-                nn.Linear(in_dim,256), nn.GELU(),
-                nn.Linear(256,512), nn.GELU(),
-                nn.Linear(512,256), nn.GELU(),
-                nn.Linear(256,T), nn.Sigmoid())
-            net.load_state_dict(ckpt["model_state_dict"])
-            net.eval(); self.net = net.to(device)
-    def predict(self, descriptor, m0=0.0):
-        if self.net is not None:
-            with torch.no_grad():
-                d_t = torch.tensor(descriptor, dtype=torch.float32).to(self.device)
-                out = self.net(d_t.unsqueeze(0)).squeeze()
-                return (out.cpu().numpy()*2-1).astype(np.float32)
-        rho_Z = float(descriptor[0]); lam2 = float(descriptor[1])
-        tg    = np.arange(self.T, dtype=np.float32)
-        return np.clip(1-np.exp(-(rho_Z*(1+lam2))*tg*0.15), -1, 1).astype(np.float32)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Model loading
-# ─────────────────────────────────────────────────────────────────────────────
-
-def load_zt(path, device):
-    ckpt = torch.load(path, map_location=device, weights_only=False)
-    hp   = ckpt.get("hyperparams", {})
-    m    = ZealotTransformer(
-        node_feat_dim=hp.get("node_feat_dim", NODE_FEAT_DIM),
-        d_model=hp.get("d_model", 128),
-        nhead=hp.get("nhead", 4),
-        num_transformer_layers=hp.get("num_transformer_layers", 3),
-        lstm_hidden=hp.get("lstm_hidden", 256),
-        lstm_layers=hp.get("lstm_layers", 2),
-        T=hp.get("T", T_STEPS), dropout=0.0).to(device)
-    m.load_state_dict(ckpt["model_state_dict"]); m.eval()
-    best = ckpt.get("best_val_rmse", ckpt.get("avg_val_rmse", "?"))
-    print(f"  ✓ ZealotTransformer  epoch={ckpt.get('epoch','?')}  best_RMSE={best}")
-    return m
-
-
-def load_spectral_lstm(path, device):
-    ckpt       = torch.load(path, map_location=device, weights_only=False)
-    hp         = ckpt.get("hyperparams", {})
-    norm_stats = ckpt.get("norm_stats", None)
-    model      = SpectralLSTMModel(
-        desc_dim   = hp.get("desc_dim",   8),
-        hidden_dim = hp.get("hidden_dim", 256),
-        num_layers = hp.get("num_layers", 2),
-        T          = hp.get("T", T_STEPS))
-    model.load_state_dict(_clean(ckpt["model_state_dict"]))
-    print(f"  ✓ SpectralLSTM")
-    return model.to(device).eval(), norm_stats
-
-
-def load_pa_lstm(path, device):
-    ckpt       = torch.load(path, map_location=device, weights_only=False)
-    hp         = ckpt.get("hyperparams", {})
-    norm_stats = ckpt.get("norm_stats", None)
-    model      = PALSTMModel(
-        desc_dim   = hp.get("desc_dim",   11),
-        hidden_dim = hp.get("hidden_dim", 256),
-        num_layers = hp.get("num_layers", 2),
-        T          = hp.get("T", T_STEPS))
-    model.load_state_dict(_clean(ckpt["model_state_dict"]))
-    print(f"  ✓ PA-LSTM")
-    return model.to(device).eval(), norm_stats
-
-
-def load_gat(path, device, label):
-    ckpt = torch.load(path, map_location=device, weights_only=False)
-    hp   = ckpt.get("hyperparams", {})
-    m    = GATModel(
-        node_dim=hp.get("node_dim", 3),
-        hidden=hp.get("hidden", 256),
-        heads=hp.get("heads", 4),
-        layers=hp.get("layers", 4),
-        T=hp.get("T", T_STEPS)).to(device)
-    m.load_state_dict(ckpt["model_state_dict"]); m.eval()
-    print(f"  ✓ {label}"); return m
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Prediction dispatchers
-# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════
+# Rollouts
+# ═════════════════════════════════════════════════════════════
 
 @torch.no_grad()
-def predict_zt(model, G, zealot_set, device):
-    X    = compute_node_features(G, zealot_set)
-    zm   = np.zeros(G.number_of_nodes(), dtype=bool)
-    for nd in zealot_set: zm[nd] = True
-    return model(torch.tensor(X).to(device),
-                 torch.tensor(zm).to(device)).cpu().numpy().astype(np.float32)
+def rollout_gat(model, G, zealot_set, device):
+    N_g  = G.number_of_nodes()
+    deg  = np.array([d for _, d in G.degree()], dtype=np.float32)
+    dn   = deg / (deg.max() + 1e-8)
+    z_i  = np.zeros(N_g, dtype=np.float32)
+    for nd in zealot_set:
+        z_i[nd] = 1.0
+    ops  = np.random.choice([-1., 1.], size=N_g).astype(np.float32)
+    ops[z_i == 1] = 1.
+    s_n  = (ops + 1) / 2.
+    x    = torch.tensor(np.stack([s_n, z_i, dn], axis=1),
+                        dtype=torch.float32).to(device)
+    ei   = from_networkx(G).edge_index.to(device)
+    zm   = torch.tensor(z_i, dtype=torch.float32).to(device)
+    preds = []
+    for _ in range(T_STEPS):
+        probs  = model(x, ei)
+        samp   = torch.bernoulli(probs)
+        spin   = samp * 2 - 1;  spin[zm == 1] = 1.
+        preds.append(spin.mean().item())
+        ns = samp.clone(); ns[zm == 1] = 1.
+        x  = torch.stack([ns, x[:, 1], x[:, 2]], dim=1)
+    return np.array(preds, dtype=np.float32)
 
 
 @torch.no_grad()
-def predict_spectral_lstm(model, desc, device):
-    return model(torch.tensor(desc).to(device)).cpu().numpy().astype(np.float32)
+def rollout_spectral_lstm(model, norm_stats, G, Z, n, topo, device):
+    desc = compute_spectral_desc_8d(G, Z, n, topo)
+    desc = normalize_desc(desc[np.newaxis, :], norm_stats)
+    pred = model(torch.tensor(desc, dtype=torch.float32).to(device))
+    return (pred.squeeze(0).cpu().numpy() * 2 - 1).astype(np.float32)
 
 
 @torch.no_grad()
-def predict_pa_lstm(model, desc, G, zealot_set, device):
-    btwn = nx.betweenness_centrality(G, normalized=True)
-    degs = dict(G.degree())
-    zmb  = np.mean([btwn[nd] for nd in zealot_set]) if zealot_set else 0.0
-    zmd  = (np.mean([degs[nd] for nd in zealot_set]) /
-            (max(degs.values())+1e-8)) if zealot_set else 0.0
-    N    = G.number_of_nodes()
-    spm  = 0.0
-    if N <= 500:
-        try:
-            paths = []
-            for nd in list(zealot_set)[:5]:
-                ll = nx.single_source_shortest_path_length(G, nd)
-                paths.append(np.mean(list(ll.values())))
-            spm = np.mean(paths) / N if paths else 0.0
-        except Exception: pass
-    fd   = np.concatenate([desc, np.array([zmb, zmd, spm], dtype=np.float32)])
-    return model(torch.tensor(fd).to(device)).cpu().numpy().astype(np.float32)
+def rollout_pa_lstm(model, norm_stats, G, Z, n, topo, zealot_set, device):
+    desc = compute_pa_desc_11d(G, Z, n, topo, zealot_set)
+    desc = normalize_desc(desc[np.newaxis, :], norm_stats)
+    # Sanity check
+    if np.any(np.abs(desc) > 10):
+        print(f"    WARNING: PA-LSTM desc out of range "
+              f"(max={np.abs(desc).max():.1f})")
+    pred = model(torch.tensor(desc, dtype=torch.float32).to(device))
+    return (pred.squeeze(0).cpu().numpy() * 2 - 1).astype(np.float32)
 
 
 @torch.no_grad()
-def predict_gat(model, G, zealot_set, device):
-    d    = np.array([deg for _, deg in G.degree()], dtype=np.float32)
-    kn   = d / (d.max()+1e-8)
-    N    = G.number_of_nodes()
-    iz   = np.zeros(N, dtype=np.float32)
-    for nd in zealot_set: iz[nd] = 1.0
-    X    = np.stack([np.ones(N, dtype=np.float32), iz, kn], axis=1)
-    return model(torch.tensor(X).to(device)).cpu().numpy().astype(np.float32)
+def rollout_zt(model, G, zealot_set, device):
+    X   = compute_node_features_5d(G, zealot_set)
+    z_m = np.zeros(G.number_of_nodes(), dtype=bool)
+    for nd in zealot_set:
+        z_m[nd] = True
+    pred = model(
+        torch.tensor(X,   dtype=torch.float32).to(device),
+        torch.tensor(z_m, dtype=torch.bool).to(device))
+    return pred.cpu().numpy().astype(np.float32)
 
 
-def dispatch(name, obj, G, zealot_set, desc, m0, device):
-    if name == "Persistence":      return persistence_predict(m0, T_STEPS)
-    if name == "Mean-Field ODE":   return meanfield_predict(
-        len(zealot_set)/G.number_of_nodes(), m0, T_STEPS)
-    if name == "MLP-Descriptor":   return obj.predict(desc, m0)
-    if name == "SpectralLSTM":     return predict_spectral_lstm(obj, desc, device)
-    if name == "PA-LSTM":          return predict_pa_lstm(obj, desc, G, zealot_set, device)
-    if name == "ZealotTransformer":return predict_zt(obj, G, zealot_set, device)
-    if name in ("Specialist-Low","Specialist-High","Global-GAT"):
-        return predict_gat(obj, G, zealot_set, device)
-    return np.zeros(T_STEPS, dtype=np.float32)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════
 # Core evaluation
-# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════
 
-def evaluate(models_dict, topo, placement, Z, N, mc_runs, val_graphs,
-             device, seed_base=0):
-    """Returns gt_list, pred_dict (per-graph trajectories)."""
+def evaluate_cell(loaded, topo, placement, Z, n, mc_runs, val_graphs,
+                  device, seed_base=42):
+    """
+    Returns gt_list (list of arrays) and pred_dict (name → list of arrays).
+    """
     gt_list   = []
-    pred_dict = {name: [] for name in models_dict}
+    pred_dict = {name: [] for name in TABLE_MODELS}
+
     for g_idx in range(val_graphs):
-        seed = seed_base + g_idx*1000 + hash((topo, placement, Z, N)) % 1000
+        seed = seed_base + g_idx * 1000 + abs(hash((topo, placement, Z, n))) % 1000
         rng  = np.random.default_rng(seed)
-        try:
-            G = make_graph(topo, N, m=max(4, 8*N//1024), seed=int(rng.integers(0,99999)))
-        except Exception: continue
-
-        if placement == "hub":
-            zealot_set = place_hubs(G, Z)
-        elif placement == "random":
-            zealot_set = place_random(G, Z, rng)
-        elif placement == "bridge":
-            zealot_set = place_bridges(G, Z)
-        else:
-            zealot_set = place_hubs(G, Z)
-        gt         = simulate_trajectory(G, zealot_set, T=T_STEPS,
-                                          mc_runs=mc_runs, seed=seed+1)
+        G    = make_graph(topo, n, m=max(4, 8 * n // TRAIN_N),
+                          seed=int(rng.integers(0, 99999)))
+        zs   = get_zealot_set(G, placement, Z, rng)
+        gt   = simulate_trajectory(G, zs, T=T_STEPS, mc_runs=mc_runs, seed=seed+1)
         gt_list.append(gt)
-        desc = compute_spectral_descriptor(G, Z, N, topo)
-        m0   = float(gt[0])
+        m0  = float(gt[0])
+        rho = Z / n
 
-        for name, obj in models_dict.items():
+        # Baselines
+        pred_dict["Persistence"].append(predict_persistence(m0))
+        pred_dict["Mean-Field ODE"].append(predict_meanfield(rho, m0))
+
+        # Neural models
+        for name, obj in loaded.items():
+            if obj is None:
+                pred_dict[name].append(predict_persistence(m0))
+                continue
             try:
-                pred = dispatch(name, obj, G, zealot_set, desc, m0, device)
-            except Exception:
-                pred = np.full(T_STEPS, m0, dtype=np.float32)
-            pred_dict[name].append(pred)
+                if name == "Specialist-Low":
+                    p = rollout_gat(obj, G, zs, device)
+                elif name == "Global-GAT":
+                    p = rollout_gat(obj, G, zs, device)
+                elif name == "SpectralLSTM":
+                    model_, ns = obj
+                    p = rollout_spectral_lstm(model_, ns, G, Z, n, topo, device)
+                elif name == "PA-LSTM":
+                    model_, ns = obj
+                    p = rollout_pa_lstm(model_, ns, G, Z, n, topo, zs, device)
+                elif name == "ZealotTransformer":
+                    p = rollout_zt(obj, G, zs, device)
+                else:
+                    p = predict_persistence(m0)
+                pred_dict[name].append(p)
+            except Exception as e:
+                print(f"    [{name}] error: {e}")
+                pred_dict[name].append(predict_persistence(m0))
+
     return gt_list, pred_dict
 
 
 def rmse_stats(gt_list, pred_list):
-    if not gt_list or not pred_list: return float("nan"), float("nan")
-    per = [float(np.sqrt(np.mean((np.array(p)-np.array(g))**2)))
+    if not gt_list or not pred_list:
+        return float("nan"), float("nan")
+    per = [float(np.sqrt(np.mean((np.array(p) - np.array(g))**2)))
            for p, g in zip(pred_list, gt_list)]
     return float(np.mean(per)), float(np.std(per))
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Table helpers
-# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════
+# PLAIN TEXT TABLE GENERATION (NO LATEX)
+# ═════════════════════════════════════════════════════════════
 
-SEP = "─"
-
-def fmt(mean, std, bold=False):
-    if np.isnan(mean): return "N/A"
+def _txt_fmt(mean, std, is_best=False):
+    if np.isnan(mean):
+        return "N/A"
     s = f"{mean:.3f}±{std:.3f}"
-    return f"[{s}]" if bold else s   # [brackets] = best
+    return f"*{s}*" if is_best else s
 
 
-def write_table(path, title, col_header, row_labels, col_labels,
-                data, best_per_row=True):
-    """
-    col_header : e.g. "Z" or "N"
-    row_labels : list of row identifiers  (e.g. [2,8,16,32] or model names)
-    col_labels : list of column identifiers (e.g. model names or Z values)
-    data       : dict[(row_label, col_label)] → (mean, std)
-    """
-    cw  = max(18, max((len(str(c)) for c in col_labels), default=0) + 2)
-    hw  = max(12, len(str(col_header)) + 2)
-
-    lines = [title, SEP * (hw + (cw+3)*len(col_labels) + 3)]
-    header = f"{col_header:^{hw}}" + "".join(f"   {str(c):^{cw}}" for c in col_labels)
-    lines += [header, SEP * (hw + (cw+3)*len(col_labels) + 3)]
-
-    for row in row_labels:
-        row_vals = {c: data.get((row, c), (float("nan"), float("nan")))
-                    for c in col_labels}
-        finite   = {c: v[0] for c, v in row_vals.items() if not np.isnan(v[0])}
-        best_val = min(finite.values()) if finite else np.inf
-
-        cells = []
-        for c in col_labels:
-            mean, std = row_vals[c]
-            is_best   = best_per_row and (not np.isnan(mean) and
-                                          abs(mean - best_val) < 1e-6)
-            cells.append(fmt(mean, std, is_best))
-        lines.append(f"{str(row):^{hw}}" + "".join(f"   {cell:^{cw}}" for cell in cells))
-
-    lines.append(SEP * (hw + (cw+3)*len(col_labels) + 3))
-    lines.append("[x] = best in row\n")
-    text = "\n".join(lines)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f: f.write(text)
-    return text
+def _txt_best_in_row(row_vals):
+    valids = [v[0] for v in row_vals.values() if not np.isnan(v[0])]
+    return min(valids) if valids else float("inf")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Trajectory figure  (BA hub only, Scientific Reports style)
-# ─────────────────────────────────────────────────────────────────────────────
+def write_text_table_1(results, out_path, models_in_table, val_graphs, mc_runs, N):
+    """Plain text table for cross-topology (hub placement)"""
+    with open(out_path, "w") as f:
+        f.write("=" * 120 + "\n")
+        f.write("TABLE 1: Cross-topology RMSE (hub placement)\n")
+        f.write(f"N={N}, val_graphs={val_graphs}, MC runs={mc_runs}\n")
+        f.write("=" * 120 + "\n\n")
+        
+        # Header
+        header = f"{'Z':>4}"
+        for topo in ["ba", "er", "ws"]:
+            for m in models_in_table:
+                short = TABLE_HEADERS.get(m, m[:8])
+                header += f"  {topo.upper()}_{short:>12}"
+        f.write(header + "\n")
+        f.write("-" * 120 + "\n")
+        
+        for Z in ALL_Z:
+            row = f"{Z:>4}"
+            for topo in ["ba", "er", "ws"]:
+                vals = {}
+                for m in models_in_table:
+                    mean, _ = results.get((topo, "hub", Z, m), (float("nan"), 0))
+                    vals[m] = mean
+                best = _txt_best_in_row(vals)
+                for m in models_in_table:
+                    mean, std = results.get((topo, "hub", Z, m), (float("nan"), float("nan")))
+                    if np.isnan(mean):
+                        cell = "      N/A      "
+                    else:
+                        is_best = (abs(mean - best) < 1e-6)
+                        cell = _txt_fmt(mean, std, is_best)
+                    row += f"  {cell:>14}"
+            f.write(row + "\n")
+        
+        f.write("-" * 120 + "\n")
+        f.write("* = best per row per topology\n")
+    print(f"  Saved: {out_path}")
+
+
+def write_text_table_2(results, out_path, models_in_table, val_graphs, mc_runs, N):
+    """Plain text table for zealot placement"""
+    placements = ["hub", "random", "bridge"]
+    pl_labels = {"hub": "Hub", "random": "Random", "bridge": "Bridge"}
+    
+    with open(out_path, "w") as f:
+        f.write("=" * 140 + "\n")
+        f.write("TABLE 2: Zealot placement RMSE on Barabási–Albert networks\n")
+        f.write(f"N={N}, val_graphs={val_graphs}, MC runs={mc_runs}\n")
+        f.write("=" * 140 + "\n\n")
+        
+        # Header
+        header = f"{'Z':>4}"
+        for pl in placements:
+            for m in models_in_table:
+                short = TABLE_HEADERS.get(m, m[:8])
+                header += f"  {pl_labels[pl][:6]}_{short:>12}"
+        f.write(header + "\n")
+        f.write("-" * 140 + "\n")
+        
+        for Z in ALL_Z:
+            row = f"{Z:>4}"
+            for pl in placements:
+                vals = {}
+                for m in models_in_table:
+                    mean, _ = results.get(("ba", pl, Z, m), (float("nan"), 0))
+                    vals[m] = mean
+                best = _txt_best_in_row(vals)
+                for m in models_in_table:
+                    mean, std = results.get(("ba", pl, Z, m), (float("nan"), float("nan")))
+                    if np.isnan(mean):
+                        cell = "      N/A      "
+                    else:
+                        is_best = (abs(mean - best) < 1e-6)
+                        cell = _txt_fmt(mean, std, is_best)
+                    row += f"  {cell:>14}"
+            f.write(row + "\n")
+        
+        f.write("-" * 140 + "\n")
+        f.write("* = best per row per placement\n")
+    print(f"  Saved: {out_path}")
+
+
+def write_text_table_3(results, out_path, models_in_table, val_graphs, mc_runs, Z_sz=8):
+    """Plain text table for size generalization"""
+    with open(out_path, "w") as f:
+        f.write("=" * 120 + "\n")
+        f.write(f"TABLE 3: Size generalization RMSE (hub placement, Z={Z_sz})\n")
+        f.write(f"val_graphs={val_graphs}, MC runs={mc_runs}\n")
+        f.write("=" * 120 + "\n\n")
+        
+        # Header
+        header = f"{'N':>6}"
+        for topo in ["ba", "er", "ws"]:
+            for m in models_in_table:
+                short = TABLE_HEADERS.get(m, m[:8])
+                header += f"  {topo.upper()}_{short:>12}"
+        f.write(header + "\n")
+        f.write("-" * 120 + "\n")
+        
+        for n_val in SIZE_LIST:
+            mark = "†" if n_val == TRAIN_N else ""
+            row = f"{n_val:>5}{mark}"
+            for topo in ["ba", "er", "ws"]:
+                vals = {}
+                for m in models_in_table:
+                    mean, _ = results.get((topo, n_val, m), (float("nan"), 0))
+                    vals[m] = mean
+                best = _txt_best_in_row(vals)
+                for m in models_in_table:
+                    mean, std = results.get((topo, n_val, m), (float("nan"), float("nan")))
+                    if np.isnan(mean):
+                        cell = "      N/A      "
+                    else:
+                        is_best = (abs(mean - best) < 1e-6)
+                        cell = _txt_fmt(mean, std, is_best)
+                    row += f"  {cell:>14}"
+            f.write(row + "\n")
+        
+        f.write("-" * 120 + "\n")
+        f.write("* = best per row per topology\n")
+        f.write("† = training size (N=1024)\n")
+    print(f"  Saved: {out_path}")
+
+
+# ═════════════════════════════════════════════════════════════
+# Trajectory figure
+# ═════════════════════════════════════════════════════════════
 
 def plot_trajectories(gt_by_Z, zt_by_Z, out_dir):
     plt.rcParams.update({
-        "font.family": "sans-serif",
-        "font.sans-serif": ["Arial","Helvetica","DejaVu Sans"],
-        "font.size": AXIS_FONT, "axes.labelsize": AXIS_FONT,
-        "axes.titlesize": PANEL_FONT, "xtick.labelsize": TICK_FONT,
-        "ytick.labelsize": TICK_FONT, "legend.fontsize": LEGEND_FONT,
-        "axes.linewidth": 0.8, "xtick.major.width": 0.6,
-        "ytick.major.width": 0.6, "lines.linewidth": LINE_WIDTH,
-        "pdf.fonttype": 42, "ps.fonttype": 42,
+        "font.family": "sans-serif", "font.size": 8,
+        "axes.labelsize": 8, "axes.titlesize": 8,
+        "xtick.labelsize": 7, "ytick.labelsize": 7,
+        "legend.fontsize": 7, "axes.linewidth": 0.8,
+        "lines.linewidth": 1.2, "pdf.fonttype": 42,
     })
-
-    fig, axes = plt.subplots(1, 4, figsize=(FIG_W_IN, FIG_W_IN*0.42),
-                             sharey=True, constrained_layout=True)
-    C = {"Ground Truth": "#1B3A5C", "ZealotTransformer": "#0D9488"}
-    t  = np.arange(T_STEPS)
-
-    # Collect trajectory data for JSON export
-    traj_json = {}
-
-    for ax, Z, lab in zip(axes, ALL_Z, ["a","b","c","d"]):
-        gt_t = gt_by_Z.get(Z, [])
-        zt_t = zt_by_Z.get(Z, [])
-
-        traj_json[f"Z{Z}"] = {
-            "ground_truth_mean": [],
-            "ground_truth_std":  [],
-            "zt_mean":           [],
-            "zt_std":            [],
-        }
-
-        if gt_t:
-            gt_a  = np.array(gt_t)
+    fig, axes = plt.subplots(
+        1, 4, figsize=(FIG_W_IN, FIG_W_IN * 0.42),
+        sharey=True, constrained_layout=True)
+    steps = np.arange(T_STEPS)
+    for ax, Z, lab in zip(axes, ALL_Z, ["a", "b", "c", "d"]):
+        if gt_by_Z.get(Z):
+            gt_a = np.array(gt_by_Z[Z])
             gtm, gts = gt_a.mean(0), gt_a.std(0)
-            ax.fill_between(t, gtm-gts, gtm+gts,
-                            color=C["Ground Truth"], alpha=0.15, linewidth=0)
-            ax.plot(t, gtm, color=C["Ground Truth"], lw=LINE_WIDTH,
-                    label="Ground Truth", zorder=3)
-            traj_json[f"Z{Z}"]["ground_truth_mean"] = gtm.tolist()
-            traj_json[f"Z{Z}"]["ground_truth_std"]  = gts.tolist()
-
-        if zt_t:
-            zt_a  = np.array(zt_t)
+            ax.fill_between(steps, gtm - gts, gtm + gts,
+                            color="#1B3A5C", alpha=0.15, lw=0)
+            ax.plot(steps, gtm, color="#1B3A5C", lw=1.2, label="Ground Truth")
+        if zt_by_Z.get(Z):
+            zt_a = np.array(zt_by_Z[Z])
             ztm, zts = zt_a.mean(0), zt_a.std(0)
-            ax.fill_between(t, ztm-zts, ztm+zts,
-                            color=C["ZealotTransformer"], alpha=0.18, linewidth=0)
-            ax.plot(t, ztm, color=C["ZealotTransformer"], lw=LINE_WIDTH,
-                    ls="--", label="ZealotTransformer", zorder=4)
-            traj_json[f"Z{Z}"]["zt_mean"] = ztm.tolist()
-            traj_json[f"Z{Z}"]["zt_std"]  = zts.tolist()
-
-        ax.set_xlim(0, T_STEPS-1); ax.set_ylim(-0.05, 1.05)
-        ax.set_xlabel("Time step", fontsize=AXIS_FONT)
-        if ax is axes[0]: ax.set_ylabel(r"Magnetization $m(t)$", fontsize=AXIS_FONT)
-        ax.set_title(f"$Z = {Z}$", fontsize=PANEL_FONT, pad=3)
+            ax.fill_between(steps, ztm - zts, ztm + zts,
+                            color="#0D9488", alpha=0.18, lw=0)
+            ax.plot(steps, ztm, color="#0D9488", lw=1.2, ls="--",
+                    label="ZealotTransformer")
+        ax.set_xlim(0, T_STEPS - 1); ax.set_ylim(-0.05, 1.05)
+        ax.set_xlabel("Time step")
+        if ax is axes[0]:
+            ax.set_ylabel(r"Magnetization $m(t)$")
+        ax.set_title(f"$Z = {Z}$", pad=3)
         ax.text(-0.12, 1.04, lab, transform=ax.transAxes,
-                fontsize=PANEL_FONT+1, fontweight="bold", va="top", ha="left")
-        ax.tick_params(axis="both", which="major", length=3, pad=2)
-        ax.spines["top"].set_visible(False); ax.spines["right"].set_visible(False)
+                fontsize=9, fontweight="bold", va="top")
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.tick_params(length=3, pad=2)
         if ax is axes[-1]:
-            ax.legend(loc="lower right", frameon=False,
-                      fontsize=LEGEND_FONT, handlelength=1.5)
-
-    fig_dir = os.path.join(out_dir, "figures")
-    os.makedirs(fig_dir, exist_ok=True)
-    base = os.path.join(fig_dir, "ba_trajectories_gt_vs_zt")
+            ax.legend(loc="lower right", frameon=False)
+    base = os.path.join(out_dir, "ba_trajectories_gt_vs_zt")
     fig.savefig(base + ".pdf", dpi=300, bbox_inches="tight")
     fig.savefig(base + ".png", dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"  Figure → {base}.pdf / .png")
-
-    # Save trajectory JSON
-    traj_dir  = os.path.join(out_dir, "trajectories")
-    os.makedirs(traj_dir, exist_ok=True)
-    traj_path = os.path.join(traj_dir, "trajectories_ba_hub_N1024.json")
-    with open(traj_path, "w") as f: json.dump(traj_json, f, indent=2)
-    print(f"  Trajectories JSON → {traj_path}")
+    print(f"  Figure: {base}.pdf / .png")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Main
-# ─────────────────────────────────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════
+# CLI
+# ═════════════════════════════════════════════════════════════
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--zt_checkpoint",            type=str, required=True)
-    p.add_argument("--spec_low_checkpoint",       type=str, default=None)
-    p.add_argument("--spec_high_checkpoint",      type=str, default=None)
-    p.add_argument("--global_gat_checkpoint",     type=str, default=None)
-    p.add_argument("--spectral_lstm_checkpoint",  type=str, default=None)
-    p.add_argument("--pa_lstm_checkpoint",        type=str, default=None)
-    p.add_argument("--mlp_desc_checkpoint",       type=str, default=None)
-    p.add_argument("--n",          type=int, default=1024,
-                   help="Network size for Tables 1 & 2 (default: 1024)")
-    p.add_argument("--mc_runs",    type=int, default=128)
-    p.add_argument("--val_graphs", type=int, default=10)
-    p.add_argument("--out_dir",    type=str, default="comparison_results")
-    p.add_argument("--seed",       type=int, default=42)
+    p.add_argument("--zt_checkpoint",              type=str, required=True)
+    p.add_argument("--spectral_lstm_checkpoint",   type=str, default=None)
+    p.add_argument("--pa_lstm_checkpoint",         type=str, default=None)
+    p.add_argument("--spec_low_checkpoint",        type=str, default=None)
+    p.add_argument("--global_gat_checkpoint",      type=str, default=None)
+    p.add_argument("--n",          type=int,   default=1024)
+    p.add_argument("--mc_runs",    type=int,   default=64)
+    p.add_argument("--val_graphs", type=int,   default=10)
+    p.add_argument("--out_dir",    type=str,   default="result")
+    p.add_argument("--seed",       type=int,   default=42)
     p.add_argument("--eval_sizes", action="store_true",
-                   help="Also produce Table 3: BA size generalisation sweep")
+                   help="Run Table 3: size generalization (all topologies × N)")
     return p.parse_args()
 
+
+# ═════════════════════════════════════════════════════════════
+# Main
+# ═════════════════════════════════════════════════════════════
 
 def main():
     args   = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"\nDevice: {device}")
-    np.random.seed(args.seed); torch.manual_seed(args.seed)
+    if device.type == "cuda":
+        props = torch.cuda.get_device_properties(0)
+        print(f"  GPU: {props.name}  VRAM={props.total_memory/1e9:.1f} GB")
 
-    tbl_dir  = os.path.join(args.out_dir, "tables")
-    traj_dir = os.path.join(args.out_dir, "trajectories")
-    fig_dir  = os.path.join(args.out_dir, "figures")
-    for d in [tbl_dir, traj_dir, fig_dir, args.out_dir]:
-        os.makedirs(d, exist_ok=True)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
 
-    # ── Load models ──────────────────────────────────────────────────────────
+    tbl_dir = os.path.join(args.out_dir, "tables")
+    fig_dir = os.path.join(args.out_dir, "figures")
+    os.makedirs(tbl_dir, exist_ok=True)
+    os.makedirs(fig_dir, exist_ok=True)
+
+    # ── Load models ───────────────────────────────────────────
     print("\nLoading models...")
-    M = {}
-    M["Persistence"]    = None
-    M["Mean-Field ODE"] = None
-    M["MLP-Descriptor"] = MLPDescriptorModel(
-        args.mlp_desc_checkpoint, T=T_STEPS, device=str(device))
-    M["ZealotTransformer"] = load_zt(args.zt_checkpoint, device)
+    loaded = {}
 
-    opt_loaders = [
-        ("SpectralLSTM",    args.spectral_lstm_checkpoint,
-         load_spectral_lstm),
-        ("PA-LSTM",         args.pa_lstm_checkpoint,
-         load_pa_lstm),
-        ("Specialist-Low",  args.spec_low_checkpoint,
-         lambda p, d: load_gat(p, d, "Specialist-Low")),
-        ("Specialist-High", args.spec_high_checkpoint,
-         lambda p, d: load_gat(p, d, "Specialist-High")),
-        ("Global-GAT",      args.global_gat_checkpoint,
-         lambda p, d: load_gat(p, d, "Global-GAT")),
-    ]
-    for name, ckpt_path, loader in opt_loaders:
-        if ckpt_path and os.path.isfile(ckpt_path):
-            M[name] = loader(ckpt_path, device)
-        else:
-            print(f"  ⚠  {name}: no checkpoint — skipping")
+    if args.spec_low_checkpoint and os.path.isfile(args.spec_low_checkpoint):
+        loaded["Specialist-Low"] = load_local_gat(
+            args.spec_low_checkpoint, device, "Specialist-Low")
+    else:
+        print("  ⚠ Specialist-Low: not found — will use persistence fallback")
+        loaded["Specialist-Low"] = None
 
-    active_names = [n for n in MODEL_ORDER if n in M]
-    active_M     = {n: M[n] for n in active_names}
-    N            = args.n
-    t0_all       = time.time()
+    if args.global_gat_checkpoint and os.path.isfile(args.global_gat_checkpoint):
+        loaded["Global-GAT"] = load_global_gat(args.global_gat_checkpoint, device)
+    else:
+        print("  ⚠ Global-GAT: not found — will use persistence fallback")
+        loaded["Global-GAT"] = None
 
-    # =========================================================================
-    # TABLE 1 — BA, hub placement, Z∈{2,8,16,32}
-    #           Rows = Z  |  Columns = models
-    # =========================================================================
-    print("\n━━━  TABLE 1: BA hub placement  ━━━")
-    results_t1 = {}   # (Z, name) → (mean, std)
+    if args.spectral_lstm_checkpoint and os.path.isfile(args.spectral_lstm_checkpoint):
+        loaded["SpectralLSTM"] = load_spectral_lstm(
+            args.spectral_lstm_checkpoint, device)
+    else:
+        print("  ⚠ SpectralLSTM: not found")
+        loaded["SpectralLSTM"] = None
 
-    # Also collect trajectories for the figure
-    gt_by_Z_ba = {Z: [] for Z in ALL_Z}
-    zt_by_Z_ba = {Z: [] for Z in ALL_Z}
+    if args.pa_lstm_checkpoint and os.path.isfile(args.pa_lstm_checkpoint):
+        loaded["PA-LSTM"] = load_pa_lstm(args.pa_lstm_checkpoint, device)
+    else:
+        print("  ⚠ PA-LSTM: not found")
+        loaded["PA-LSTM"] = None
 
-    total = len(ALL_Z)
-    for i, Z in enumerate(ALL_Z, 1):
-        print(f"  [{i}/{total}] BA hub Z={Z}", flush=True)
-        t0 = time.time()
-        gt_list, pred_dict = evaluate(
-            active_M, "ba", "hub", Z, N,
-            args.mc_runs, args.val_graphs, device, args.seed)
+    loaded["ZealotTransformer"] = load_zt(args.zt_checkpoint, device)
 
-        for name in active_names:
-            mn, sd = rmse_stats(gt_list, pred_dict[name])
-            results_t1[(Z, name)] = (mn, sd)
-            print(f"    {name:<22}  {mn:.4f}±{sd:.4f}")
+    # Models to show in all tables
+    models_in_table = [m for m in TABLE_MODELS
+                       if m in ("Persistence", "Mean-Field ODE") or
+                          loaded.get(m) is not None]
+    print(f"\nModels in tables: {models_in_table}")
 
-        gt_by_Z_ba[Z].extend(gt_list)
-        if "ZealotTransformer" in pred_dict:
-            zt_by_Z_ba[Z].extend(pred_dict["ZealotTransformer"])
+    t0_all = time.time()
 
-        # Save raw trajectories
-        raw = {"ground_truth": [t.tolist() for t in gt_list],
-               "predictions":  {n: [t.tolist() for t in pred_dict[n]]
-                                 for n in active_names}}
-        jp = os.path.join(traj_dir, f"trajectories_ba_hub_Z{Z}_N{N}.json")
-        with open(jp, "w") as f: json.dump(raw, f, indent=2)
-        print(f"    ({time.time()-t0:.1f}s)", flush=True)
+    # ── Experiment 1: Cross-topology (hub placement) ──────────
+    print("\n" + "="*60)
+    print("EXPERIMENT 1 + TABLE 1: Cross-topology RMSE (hub placement)")
+    print("="*60)
+    results_topo = {}
+    gt_ba_hub    = {Z: [] for Z in ALL_Z}
+    zt_ba_hub    = {Z: [] for Z in ALL_Z}
 
-    t1_path = os.path.join(tbl_dir, "table1_ba_hub.txt")
-    _write_table_t1(t1_path, results_t1, active_names, N, args)
-    print(f"\n  Table 1 → {t1_path}")
-
-    # =========================================================================
-    # TABLE 2 — BA, hub vs random vs bridge, Z∈{2,8,16,32}
-    #           Rows = models  |  Columns = placement/Z combos
-    # =========================================================================
-    print("\n━━━  TABLE 2: BA placement comparison  ━━━")
-    results_t2 = {}   # (name, placement, Z) → (mean, std)
-
-    # hub results already computed above
-    for Z in ALL_Z:
-        for name in active_names:
-            if (Z, name) in results_t1:
-                results_t2[(name, "hub", Z)] = results_t1[(Z, name)]
-
-    # random and bridge
-    for placement in ["random", "bridge"]:
-        total_p = len(ALL_Z)
-        for i, Z in enumerate(ALL_Z, 1):
-            print(f"  [{i}/{total_p}] BA {placement} Z={Z}", flush=True)
-            t0 = time.time()
-            gt_list, pred_dict = evaluate(
-                active_M, "ba", placement, Z, N,
+    total = len(TOPOLOGIES) * len(ALL_Z)
+    done  = 0
+    for topo in TOPOLOGIES:
+        for Z in ALL_Z:
+            done += 1
+            print(f"\n  [{done}/{total}]  topo={topo}  Z={Z}  "
+                  f"placement=hub  N={args.n}", flush=True)
+            t1 = time.time()
+            gt_list, pred_dict = evaluate_cell(
+                loaded, topo, "hub", Z, args.n,
                 args.mc_runs, args.val_graphs, device, args.seed)
+            for name in models_in_table:
+                if name in ("Persistence", "Mean-Field ODE"):
+                    preds = pred_dict[name]
+                else:
+                    preds = pred_dict.get(name, [])
+                m, s = rmse_stats(gt_list, preds)
+                results_topo[(topo, "hub", Z, name)] = (m, s)
+                print(f"    {name:<22}  {m:.4f}±{s:.4f}")
+            if topo == "ba":
+                gt_ba_hub[Z].extend(gt_list)
+                if "ZealotTransformer" in pred_dict:
+                    zt_ba_hub[Z].extend(pred_dict["ZealotTransformer"])
+            print(f"    ({time.time()-t1:.0f}s)", flush=True)
 
-            for name in active_names:
-                mn, sd = rmse_stats(gt_list, pred_dict[name])
-                results_t2[(name, placement, Z)] = (mn, sd)
-                print(f"    {name:<22}  {mn:.4f}±{sd:.4f}")
+    # ── Experiment 2: Zealot placement (BA, all placements) ───
+    print("\n" + "="*60)
+    print("EXPERIMENT 2 + TABLE 2: Zealot Placement (BA only)")
+    print("="*60)
+    placements_to_run = ["hub", "bridge", "random"]
+    total = len(placements_to_run) * len(ALL_Z)
+    done  = 0
+    for pl in placements_to_run:
+        for Z in ALL_Z:
+            done += 1
+            print(f"\n  [{done}/{total}]  topo=ba  Z={Z}  "
+                  f"placement={pl}  N={args.n}", flush=True)
+            t1 = time.time()
+            gt_list, pred_dict = evaluate_cell(
+                loaded, "ba", pl, Z, args.n,
+                args.mc_runs, args.val_graphs, device, args.seed + 100)
+            for name in models_in_table:
+                if name in ("Persistence", "Mean-Field ODE"):
+                    preds = pred_dict[name]
+                else:
+                    preds = pred_dict.get(name, [])
+                m, s = rmse_stats(gt_list, preds)
+                results_topo[("ba", pl, Z, name)] = (m, s)
+                print(f"    {name:<22}  {m:.4f}±{s:.4f}")
+            print(f"    ({time.time()-t1:.0f}s)", flush=True)
 
-            # Save raw trajectories
-            raw = {"ground_truth": [t.tolist() for t in gt_list],
-                   "predictions":  {n: [t.tolist() for t in pred_dict[n]]
-                                     for n in active_names}}
-            jp = os.path.join(traj_dir,
-                              f"trajectories_ba_{placement}_Z{Z}_N{N}.json")
-            with open(jp, "w") as f: json.dump(raw, f, indent=2)
-            print(f"    ({time.time()-t0:.1f}s)", flush=True)
+    # Save Tables 1 & 2 (PLAIN TEXT)
+    write_text_table_1(results_topo,
+                       os.path.join(tbl_dir, "table1_cross_topology.txt"),
+                       models_in_table, args.val_graphs, args.mc_runs, args.n)
+    write_text_table_2(results_topo,
+                       os.path.join(tbl_dir, "table2_zealot_placement.txt"),
+                       models_in_table, args.val_graphs, args.mc_runs, args.n)
 
-    t2_path = os.path.join(tbl_dir, "table2_ba_placement.txt")
-    _write_table_t2(t2_path, results_t2, active_names, N, args)
-    print(f"\n  Table 2 → {t2_path}")
-
-    # =========================================================================
-    # TABLE 3 — BA, hub placement, N∈{256,512,1024,2048,4096}, Z=8
-    #           Rows = N  |  Columns = models
-    #           Only run when --eval_sizes is set
-    # =========================================================================
-    results_t3 = {}
+    # ── Experiment 3: Size generalization ─────────────────────
+    results_gen = {}
     if args.eval_sizes:
-        print("\n━━━  TABLE 3: BA size generalisation  ━━━")
-        Z_sz = 8
-        total_sz = len(SIZE_LIST)
-        for i, sz in enumerate(SIZE_LIST, 1):
-            print(f"  [{i}/{total_sz}] BA hub N={sz} Z={Z_sz}", flush=True)
-            t0 = time.time()
-            gt_l, pd_d = evaluate(
-                active_M, "ba", "hub", Z_sz, sz,
-                min(args.mc_runs, 64),
-                min(args.val_graphs, 5),
-                device, args.seed)
+        print("\n" + "="*60)
+        print("EXPERIMENT 3 + TABLE 3: Size Generalization (hub, Z=8)")
+        print("ALL TOPOLOGIES: BA, ER, WS")
+        print("="*60)
+        Z_sz   = 8
+        total  = len(TOPOLOGIES) * len(SIZE_LIST)
+        done   = 0
+        for topo in TOPOLOGIES:
+            for n_val in SIZE_LIST:
+                done += 1
+                mark = " ←TRAIN" if n_val == TRAIN_N else ""
+                print(f"\n  [{done}/{total}]  topo={topo}  N={n_val}"
+                      f"  Z={Z_sz}{mark}", flush=True)
+                t1 = time.time()
+                gt_list, pred_dict = evaluate_cell(
+                    loaded, topo, "hub", Z_sz, n_val,
+                    min(args.mc_runs, 64),
+                    min(args.val_graphs, 5),
+                    device, args.seed + 200)
+                for name in models_in_table:
+                    if name in ("Persistence", "Mean-Field ODE"):
+                        preds = pred_dict[name]
+                    else:
+                        preds = pred_dict.get(name, [])
+                    m, s = rmse_stats(gt_list, preds)
+                    results_gen[(topo, n_val, name)] = (m, s)
+                    print(f"    {name:<22}  {m:.4f}±{s:.4f}")
+                print(f"    ({time.time()-t1:.0f}s)", flush=True)
 
-            for name in active_names:
-                mn, sd = rmse_stats(gt_l, pd_d[name])
-                results_t3[(sz, name)] = (mn, sd)
-                print(f"    {name:<22}  {mn:.4f}±{sd:.4f}")
+        write_text_table_3(results_gen,
+                           os.path.join(tbl_dir, "table3_size_generalization.txt"),
+                           models_in_table, args.val_graphs, args.mc_runs)
 
-            raw = {"ground_truth": [t.tolist() for t in gt_l],
-                   "predictions":  {n: [t.tolist() for t in pd_d[n]]
-                                     for n in active_names}}
-            jp = os.path.join(traj_dir,
-                              f"trajectories_ba_hub_Z{Z_sz}_N{sz}.json")
-            with open(jp, "w") as f: json.dump(raw, f, indent=2)
-            print(f"    ({time.time()-t0:.1f}s)", flush=True)
+    # ── Trajectory figure ──────────────────────────────────────
+    print("\n[Plot] BA trajectory figure (hub placement)...")
+    plot_trajectories(gt_ba_hub, zt_ba_hub, fig_dir)
 
-        t3_path = os.path.join(tbl_dir, "table3_ba_size.txt")
-        _write_table_t3(t3_path, results_t3, active_names, Z_sz, args)
-        print(f"\n  Table 3 → {t3_path}")
-
-    # ── Trajectory figure ────────────────────────────────────────────────────
-    print("\nGenerating BA trajectory figure...")
-    plot_trajectories(gt_by_Z_ba, zt_by_Z_ba, args.out_dir)
-
-    # ── Raw JSON ─────────────────────────────────────────────────────────────
+    # ── Save raw JSON ──────────────────────────────────────────
     raw = {}
-    for (Z, name), (mn, sd) in results_t1.items():
-        raw[f"ba_hub_Z{Z}_{name}"] = {"mean": mn, "std": sd}
-    for (name, pl, Z), (mn, sd) in results_t2.items():
-        raw[f"ba_{pl}_Z{Z}_{name}"] = {"mean": mn, "std": sd}
-    for (sz, name), (mn, sd) in results_t3.items():
-        raw[f"ba_hub_N{sz}_Z8_{name}"] = {"mean": mn, "std": sd}
+    for (topo, pl, Z, name), (m, s) in results_topo.items():
+        raw[f"{topo}_{pl}_Z{Z}_{name}"] = {"mean": m, "std": s}
+    for (topo, n_val, name), (m, s) in results_gen.items():
+        raw[f"gen_{topo}_N{n_val}_Z8_{name}"] = {"mean": m, "std": s}
     raw_path = os.path.join(args.out_dir, "results_raw.json")
-    with open(raw_path, "w") as f: json.dump(raw, f, indent=2)
-    print(f"  Raw JSON → {raw_path}")
+    with open(raw_path, "w") as f:
+        json.dump(raw, f, indent=2)
+    print(f"\n  Raw JSON: {raw_path}")
 
-    # ── Print all tables to terminal / log ───────────────────────────────────
-    print("\n" + "=" * 80)
-    print("  FULL RESULTS  (plain text, also in tables/)")
-    print("=" * 80)
-    for fname in sorted(os.listdir(tbl_dir)):
-        if fname.endswith(".txt"):
-            fpath = os.path.join(tbl_dir, fname)
-            print(f"\n{'─'*80}\n  {fname}\n{'─'*80}")
-            with open(fpath) as f: print(f.read())
-
-    print(f"\n✓ Done in {time.time()-t0_all:.0f}s")
-    print(f"  tables/      → {tbl_dir}")
-    print(f"  figures/     → {fig_dir}")
-    print(f"  trajectories/→ {traj_dir}")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Table writers  (plain text, no LaTeX)
-# ─────────────────────────────────────────────────────────────────────────────
-
-SEP  = "-"
-SEP2 = "="
-
-def _fmt(mean, std, is_best=False):
-    if np.isnan(mean): return "N/A"
-    s = f"{mean:.3f}+/-{std:.3f}"
-    return f">>>{s}<<<" if is_best else s
-
-
-def _best_in_row(vals_dict):
-    """Return the minimum finite mean value in a dict of (mean,std)."""
-    finite = {k: v[0] for k, v in vals_dict.items() if not np.isnan(v[0])}
-    return min(finite.values()) if finite else np.inf
-
-
-def _write_plain_table(f, col_header, row_labels, col_labels, data):
-    """Write a simple fixed-width plain-text table to file object f."""
-    cw  = max(20, max((len(str(c)) for c in col_labels), default=0) + 2)
-    hw  = max(14, max((len(str(r)) for r in row_labels), default=0) + 2,
-              len(str(col_header)) + 2)
-    total_w = hw + (cw + 3) * len(col_labels)
-
-    f.write(SEP * total_w + "\n")
-    hdr = f"{str(col_header):^{hw}}" + "".join(
-        f"   {str(c):^{cw}}" for c in col_labels)
-    f.write(hdr + "\n")
-    f.write(SEP * total_w + "\n")
-
-    for row in row_labels:
-        row_data = {c: data.get((row, c), (float("nan"), float("nan")))
-                    for c in col_labels}
-        best = _best_in_row(row_data)
-        cells = []
-        for c in col_labels:
-            mn, sd = row_data[c]
-            is_b   = (not np.isnan(mn) and abs(mn - best) < 1e-9)
-            cells.append(_fmt(mn, sd, is_b))
-        f.write(f"{str(row):^{hw}}" +
-                "".join(f"   {cell:^{cw}}" for cell in cells) + "\n")
-
-    f.write(SEP * total_w + "\n")
-    f.write(">>>x<<<  = best RMSE in row\n")
-    f.write("+/-      = standard deviation\n")
-
-
-def _write_table_t1(path, results, active_names, N, args):
-    """
-    Table 1: BA hub placement.
-    Rows = Z values, Columns = model names.
-    """
-    with open(path, "w") as f:
-        f.write("TABLE 1 — Cross-model comparison\n")
-        f.write("Network: Barabasi-Albert (BA)  |  Placement: hub\n")
-        f.write(f"N={N}  |  mc_runs={args.mc_runs}  |  val_graphs={args.val_graphs}  "
-                f"|  seed={args.seed}\n")
-        f.write("Metric: RMSE (mean +/- std over val_graphs, lower is better)\n\n")
-        data = {(Z, name): results.get((Z, name), (float("nan"), float("nan")))
-                for Z in ALL_Z for name in active_names}
-        _write_plain_table(f, "Z", ALL_Z, active_names, data)
-
-
-def _write_table_t2(path, results, active_names, N, args):
-    """
-    Table 2: BA placement comparison (hub / random / bridge).
-    Rows = model names, Columns = placement+Z combos.
-    """
-    placements = ["hub", "random", "bridge"]
-    col_labels = [f"{pl}/Z{Z}" for pl in placements for Z in ALL_Z]
-
-    with open(path, "w") as f:
-        f.write("TABLE 2 — Zealot placement comparison\n")
-        f.write("Network: Barabasi-Albert (BA)  |  Placements: hub / random / bridge\n")
-        f.write(f"N={N}  |  mc_runs={args.mc_runs}  |  val_graphs={args.val_graphs}  "
-                f"|  seed={args.seed}\n")
-        f.write("Metric: RMSE (mean +/- std, lower is better)\n\n")
-        data = {}
-        for name in active_names:
-            for pl in placements:
-                for Z in ALL_Z:
-                    col = f"{pl}/Z{Z}"
-                    data[(name, col)] = results.get(
-                        (name, pl, Z), (float("nan"), float("nan")))
-        _write_plain_table(f, "Model", active_names, col_labels, data)
-
-
-def _write_table_t3(path, results, active_names, Z_sz, args):
-    """
-    Table 3: BA size generalisation.
-    Rows = N values, Columns = model names.
-    """
-    with open(path, "w") as f:
-        f.write("TABLE 3 — Size generalisation (no retraining)\n")
-        f.write(f"Network: Barabasi-Albert (BA)  |  Placement: hub  |  Z={Z_sz}\n")
-        f.write(f"mc_runs={min(args.mc_runs,64)}  |  val_graphs={min(args.val_graphs,5)}  "
-                f"|  seed={args.seed}\n")
-        f.write("Rows = network size N  |  Columns = models\n")
-        f.write("Metric: RMSE (mean +/- std, lower is better)\n\n")
-        data = {(sz, name): results.get((sz, name), (float("nan"), float("nan")))
-                for sz in SIZE_LIST for name in active_names}
-        _write_plain_table(f, "N", SIZE_LIST, active_names, data)
+    total_t = time.time() - t0_all
+    print(f"\n✓ Done in {total_t:.0f}s ({total_t/60:.1f} min)")
+    print(f"\nOutputs in {args.out_dir}/:")
+    print(f"  tables/table1_cross_topology.txt")
+    print(f"  tables/table2_zealot_placement.txt")
+    if args.eval_sizes:
+        print(f"  tables/table3_size_generalization.txt")
+    print(f"  figures/ba_trajectories_gt_vs_zt.pdf")
+    print(f"  results_raw.json")
 
 
 if __name__ == "__main__":

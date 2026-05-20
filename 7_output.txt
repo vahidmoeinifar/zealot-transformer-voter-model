@@ -1,66 +1,15 @@
 ======================================================
- Job:     analysis  (18743085)
- Node:    nid006165
- Started: Wed May 20 10:35:51 AM EEST 2026
+ Job:     analysis  (18745213)
+ Node:    nid005133
+ Started: Wed May 20 01:11:23 PM EEST 2026
 ======================================================
 
 [check] Checkpoint:
   FOUND  /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt  (24M)
 
 ────────────────────────────────────────
- Running: 7_attention_analysis.py
- Wed May 20 10:35:53 AM EEST 2026
-────────────────────────────────────────
-  argv: /scratch/project_465002989/GNN_Project/7_attention_analysis.py --zt_checkpoint /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt --out_dir /scratch/project_465002989/GNN_Project/result/attention --n 1024 --n_graphs 10 --z_fixed 8 --seed 42
-
-
-Device: cuda
-
-Loading ZealotTransformer...
-  ✓  (3 Transformer layers, nhead=4)
-
-  m=4  ⟨k⟩=8  Z=8
-   Layer   Pearson_deg   Spearman_deg   Pearson_btwn   Spearman_btwn
-       1         0.760          0.689          0.903           0.645
-       2         0.545         -0.521          0.667          -0.491
-       3         0.302         -0.384          0.332          -0.346
-  Scatter (m=4) → /scratch/project_465002989/GNN_Project/result/attention/attention_vs_degree_m4.pdf / .png
-
-  m=8  ⟨k⟩=16  Z=8
-   Layer   Pearson_deg   Spearman_deg   Pearson_btwn   Spearman_btwn
-       1         0.684          0.741          0.847           0.722
-       2         0.494         -0.603          0.655          -0.588
-       3         0.348         -0.804          0.436          -0.788
-  Scatter (m=8) → /scratch/project_465002989/GNN_Project/result/attention/attention_vs_degree_m8.pdf / .png
-
-  m=16  ⟨k⟩=32  Z=8
-   Layer   Pearson_deg   Spearman_deg   Pearson_btwn   Spearman_btwn
-       1         0.606          0.820          0.777           0.765
-       2         0.424         -0.754          0.618          -0.696
-       3         0.302         -0.905          0.421          -0.894
-  Scatter (m=16) → /scratch/project_465002989/GNN_Project/result/attention/attention_vs_degree_m16.pdf / .png
-  Correlation plot → /scratch/project_465002989/GNN_Project/result/attention/attention_correlations.pdf / .png
-
-Global-GAT → ZealotTransformer Attention vs Centrality
-(Z=8, N=1024, averaged over graphs, last Transformer layer)
-─────────────────────────────────────────────────────────────────────────────────────────────
-  m       Pearson r (deg)      Pearson r (btwn)     Spearman ρ (deg)    Spearman ρ (btwn) 
-─────────────────────────────────────────────────────────────────────────────────────────────
-  4            0.302                0.332                -0.384               -0.346      
-  8            0.348                0.436                -0.804               -0.788      
-  16           0.302                0.421                -0.905               -0.894      
-─────────────────────────────────────────────────────────────────────────────────────────────
-
-  Table → /scratch/project_465002989/GNN_Project/result/attention/attention_correlations_table.txt
-
-  JSON → /scratch/project_465002989/GNN_Project/result/attention/attention_analysis.json
-
-✓ Done.
- Done: 7_attention_analysis.py  (exit 0)
-
-────────────────────────────────────────
  Running: 8_convergence_speed.py
- Wed May 20 10:38:45 AM EEST 2026
+ Wed May 20 01:11:26 PM EEST 2026
 ────────────────────────────────────────
   argv: /scratch/project_465002989/GNN_Project/8_convergence_speed.py --zt_checkpoint /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt --log_path /scratch/project_465002989/GNN_Project/saved_models/training_log.json --out_dir /scratch/project_465002989/GNN_Project/result/convergence --n 1024 --mc_runs 128 --val_graphs 20 --threshold 0.80 --seed 42
 
@@ -81,71 +30,3 @@ Computing convergence times  (threshold=0.8, N=1024, mc_runs=128, val_graphs=20)
     140/240
     160/240
     180/240
-    200/240
-    220/240
-    240/240
-  Convergence speed  → /scratch/project_465002989/GNN_Project/result/convergence/convergence_speed.pdf / .png
-  JSON → /scratch/project_465002989/GNN_Project/result/convergence/convergence_speed.json
-
-✓ Done.
- Done: 8_convergence_speed.py  (exit 0)
-
-────────────────────────────────────────
- Running: 9_speedup_table.py
- Wed May 20 11:20:36 AM EEST 2026
-────────────────────────────────────────
-  argv: /scratch/project_465002989/GNN_Project/9_speedup_table.py --zt_checkpoint /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt --out_dir /scratch/project_465002989/GNN_Project/result/speedup --seed 42 --n_repeats 5 --mc_runs 20 --T 50
-
-
-Loading ZealotTransformer...
-  GPU: AMD Instinct MI250X  VRAM=68.7 GB
-
-  N=256, Z=8, BA
-    MC CPU=0.408s  ZT CPU=28.0ms (15×)  ZT GPU=26.4ms (15×)
-  N=512, Z=8, BA
-    MC CPU=0.817s  ZT CPU=45.6ms (18×)  ZT GPU=26.5ms (31×)
-  N=1024, Z=8, BA
-    MC CPU=1.634s  ZT CPU=114.0ms (14×)  ZT GPU=26.5ms (62×)
-  N=2048, Z=8, BA
-    MC CPU=3.300s  ZT CPU=524.7ms (6×)  ZT GPU=26.6ms (124×)
-  N=4096, Z=8, BA
-    MC CPU=6.618s  ZT CPU=2085.1ms (3×)  ZT GPU=27.2ms (243×)
-  N=1024, Z=32, BA
-    MC CPU=1.600s  ZT CPU=114.8ms (14×)  ZT GPU=26.9ms (59×)
-  N=1024, Z=8, ER
-    MC CPU=1.629s  ZT CPU=119.0ms (14×)  ZT GPU=26.8ms (61×)
-  N=1024, Z=8, WS
-    MC CPU=1.628s  ZT CPU=119.3ms (14×)  ZT GPU=26.9ms (61×)
-  Figure → /scratch/project_465002989/GNN_Project/result/speedup/speedup_chart.pdf / .png
-  Table  → /scratch/project_465002989/GNN_Project/result/speedup/speedup_table.txt
-Speedup: ZealotTransformer vs Monte Carlo
-MC: single-threaded CPU  |  median of 5 repeats  |  T=50  mc_runs=20
-───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Configuration                    MC CPU (s)          ZT CPU (ms)          CPU Speedup          ZT GPU (ms)          GPU Speedup    
-───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-N=256, Z=8, BA                     0.408                28.04                  15        ×         26.45                  15        ×
-N=512, Z=8, BA                     0.817                45.61                  18        ×         26.50                  31        ×
-N=1024, Z=8, BA                    1.634                114.03                 14        ×         26.49                  62        ×
-N=2048, Z=8, BA                    3.300                524.66                 6         ×         26.64                 124        ×
-N=4096, Z=8, BA                    6.618               2085.11                 3         ×         27.23                 243        ×
-N=1024, Z=32, BA                   1.600                114.81                 14        ×         26.90                  59        ×
-N=1024, Z=8, ER                    1.629                118.96                 14        ×         26.77                  61        ×
-N=1024, Z=8, WS                    1.628                119.32                 14        ×         26.89                  61        ×
-───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-  JSON   → /scratch/project_465002989/GNN_Project/result/speedup/speedup_results.json
-
-✓ Done.
- Done: 9_speedup_table.py  (exit 0)
-
-======================================================
- All analysis done: Wed May 20 11:23:13 AM EEST 2026
- Results:
-total 40K
-drwxrws--- 2 moeinifa project_465002989 4.0K May 20 10:38 attention
-drwxrws--- 2 moeinifa project_465002989 4.0K May 20 11:20 convergence
-drwxrws--- 2 moeinifa project_465002989 4.0K May 19 20:31 figures
--rw-rw---- 1 moeinifa project_465002989  14K May 19 20:31 results_raw.json
-drwxrws--- 2 moeinifa project_465002989 4.0K May 20 11:23 speedup
-drwxrws--- 2 moeinifa project_465002989 4.0K May 19 22:09 tables
-drwxrws--- 2 moeinifa project_465002989 4.0K May 19 19:05 trajectories
-======================================================
