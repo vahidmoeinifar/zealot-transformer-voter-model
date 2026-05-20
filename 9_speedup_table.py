@@ -159,7 +159,7 @@ class ZealotTransformer(nn.Module):
 
 
 def load_model(path, device):
-    ckpt = torch.load(path, map_location=device)
+    ckpt = torch.load(path, map_location=device, weights_only=False)
     hp   = ckpt.get("hyperparams", {})
     m    = ZealotTransformer(
         node_feat_dim=hp.get("node_feat_dim", NODE_FEAT_DIM),

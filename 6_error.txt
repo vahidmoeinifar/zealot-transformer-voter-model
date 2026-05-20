@@ -1,0 +1,24 @@
+Please note that there are severe license restrictions when using packages from
+the regular Anaconda repositories that apply to most users of LUMI. See the
+user documentation section on
+https://lumi-supercomputer.github.io/LUMI-EasyBuild-docs/l/lumi-container-wrapper/
+for more information. Take this information seriously as it can have legal
+consquences for you and your institution. 
+Traceback (most recent call last):
+  File "<stdin>", line 35, in <module>
+  File "<frozen runpy>", line 286, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/project_465002989/GNN_Project/6_compare_models.py", line 975, in <module>
+    main()
+  File "/scratch/project_465002989/GNN_Project/6_compare_models.py", line 710, in main
+    M[name] = loader(ckpt_path, device)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/project_465002989/GNN_Project/6_compare_models.py", line 381, in load_spectral_lstm
+    m.load_state_dict(ckpt["model_state_dict"]); m.eval()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/project_465002989/GNN_Project/pyg-wrapper/lib/python3.12/site-packages/torch/nn/modules/module.py", line 2629, in load_state_dict
+    raise RuntimeError(
+RuntimeError: Error(s) in loading state_dict for SpectralLSTMModel:
+	Missing key(s) in state_dict: "enc.0.weight", "enc.0.bias", "enc.2.weight", "enc.2.bias", "enc.4.weight", "enc.4.bias", "head.0.weight", "head.0.bias", "head.2.weight", "head.2.bias". 
+	Unexpected key(s) in state_dict: "encoder.0.weight", "encoder.0.bias", "encoder.3.weight", "encoder.3.bias", "encoder.6.weight", "encoder.6.bias", "output_head.0.weight", "output_head.0.bias", "output_head.2.weight", "output_head.2.bias". 
