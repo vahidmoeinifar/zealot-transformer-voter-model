@@ -657,7 +657,7 @@ def write_text_table_1(results, out_path, models_in_table, val_graphs, mc_runs, 
     lines.append("=" * 120)
     lines.append(f"TABLE 1: Cross-topology RMSE (hub placement, N={N}, {val_graphs} graphs, {mc_runs} MC runs)")
     lines.append("=" * 120)
-    
+
     # Header
     header = f"{'Z':>6}"
     for topo in ["ba", "er", "ws"]:
@@ -666,7 +666,7 @@ def write_text_table_1(results, out_path, models_in_table, val_graphs, mc_runs, 
             header += f"  {topo.upper()}_{short:>12}"
     lines.append(header)
     lines.append("-" * 120)
-    
+
     for Z in ALL_Z:
         row = f"{Z:>6}"
         for topo in ["ba", "er", "ws"]:
@@ -686,11 +686,11 @@ def write_text_table_1(results, out_path, models_in_table, val_graphs, mc_runs, 
                     cell = f"{mark}{mean:>6.4f}±{std:.4f}{mark}"
                 row += f"  {cell:>14}"
         lines.append(row)
-    
+
     lines.append("=" * 120)
     lines.append("* = best per row per topology")
     lines.append("")
-    
+
     with open(out_path, "w") as f:
         f.write("\n".join(lines))
     print(f"  Saved: {out_path}")
@@ -703,12 +703,12 @@ def write_text_table_2(results, out_path, models_in_table, val_graphs, mc_runs, 
     """
     placements_used = ["hub", "bridge", "random"]
     pl_labels = {"hub": "Hub", "bridge": "Bridge", "random": "Random"}
-    
+
     lines = []
     lines.append("=" * 140)
     lines.append(f"TABLE 2: Zealot placement RMSE on Barabási–Albert networks (N={N}, {val_graphs} graphs, {mc_runs} MC runs)")
     lines.append("=" * 140)
-    
+
     # Header
     header = f"{'Z':>6}"
     for pl in placements_used:
@@ -717,7 +717,7 @@ def write_text_table_2(results, out_path, models_in_table, val_graphs, mc_runs, 
             header += f"  {pl_labels[pl][:6]}_{short:>12}"
     lines.append(header)
     lines.append("-" * 140)
-    
+
     for Z in ALL_Z:
         row = f"{Z:>6}"
         for pl in placements_used:
@@ -736,11 +736,11 @@ def write_text_table_2(results, out_path, models_in_table, val_graphs, mc_runs, 
                     cell = f"{mark}{mean:>6.4f}±{std:.4f}{mark}"
                 row += f"  {cell:>14}"
         lines.append(row)
-    
+
     lines.append("=" * 140)
     lines.append("* = best per row per placement")
     lines.append("")
-    
+
     with open(out_path, "w") as f:
         f.write("\n".join(lines))
     print(f"  Saved: {out_path}")
@@ -756,7 +756,7 @@ def write_text_table_3(results_gen, out_path, models_in_table, val_graphs, mc_ru
     lines.append(f"TABLE 3: Size generalization (hub placement, Z=8, {val_graphs} graphs, {mc_runs} MC runs)")
     lines.append(f"Models trained on N={TRAIN_N} only. † = training size")
     lines.append("=" * 120)
-    
+
     # Header
     header = f"{'N':>8}"
     for topo in ["ba", "er", "ws"]:
@@ -765,7 +765,7 @@ def write_text_table_3(results_gen, out_path, models_in_table, val_graphs, mc_ru
             header += f"  {topo.upper()}_{short:>12}"
     lines.append(header)
     lines.append("-" * 120)
-    
+
     for n_val in SIZE_LIST:
         mark = "†" if n_val == TRAIN_N else " "
         row = f"{n_val:>6}{mark}"
@@ -785,11 +785,11 @@ def write_text_table_3(results_gen, out_path, models_in_table, val_graphs, mc_ru
                     cell = f"{mark_cell}{mean:>6.4f}±{std:.4f}{mark_cell}"
                 row += f"  {cell:>14}"
         lines.append(row)
-    
+
     lines.append("=" * 120)
     lines.append("* = best per row per topology")
     lines.append("")
-    
+
     with open(out_path, "w") as f:
         f.write("\n".join(lines))
     print(f"  Saved: {out_path}")

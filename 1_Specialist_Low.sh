@@ -6,8 +6,6 @@
 #
 #  Both specialists trained sequentially in one job.
 #  Reuses pyg-wrapper + pyg-packages from the FiLM/Global-GAT setup.
-#  Outputs: saved_models/specialist_low_z2.pt
-#           saved_models/specialist_high_z32.pt
 # =============================================================================
 
 #SBATCH --job-name=specialist_gat

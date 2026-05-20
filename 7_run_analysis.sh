@@ -16,8 +16,8 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=60G
 #SBATCH --time=04:00:00
-#SBATCH --output=analysis-output.txt
-#SBATCH --error=analysis-error.txt
+#SBATCH --output=7_output.txt
+#SBATCH --error=7_error.txt
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=v.moeinifar@agh.edu.pl
 

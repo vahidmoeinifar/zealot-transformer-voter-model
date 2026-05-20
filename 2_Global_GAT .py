@@ -186,7 +186,7 @@ def main():
     parser.add_argument("--num_workers",  type=int,   required=True)
     parser.add_argument("--hidden_dim",   type=int,   required=True)
     parser.add_argument("--save_dir",     type=str,   default="saved_models")
-    parser.add_argument("--save_name",    type=str,   default="global_no_cond.pt")
+    parser.add_argument("--save_name",    type=str,   default="Global-GAT.pt")
     args = parser.parse_args()
 
     device, n_gpus = get_device()

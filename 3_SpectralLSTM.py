@@ -408,7 +408,7 @@ def parse_args():
     p.add_argument("--dropout",      type=float, required=True)
     p.add_argument("--num_workers",  type=int,   required=True)
     p.add_argument("--save_dir",     type=str,   default="saved_models")
-    p.add_argument("--save_name",    type=str,   default="universal_lstm.pt")
+    p.add_argument("--save_name",    type=str,   default="SpectralLSTM.pt")
     return p.parse_args()
 
 
