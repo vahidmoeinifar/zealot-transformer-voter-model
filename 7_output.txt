@@ -30,3 +30,24 @@ Computing convergence times  (threshold=0.8, N=1024, mc_runs=128, val_graphs=20)
     140/240
     160/240
     180/240
+    200/240
+    220/240
+    240/240
+  Convergence speed  → /scratch/project_465002989/GNN_Project/result/convergence/convergence_speed.pdf / .png
+  JSON → /scratch/project_465002989/GNN_Project/result/convergence/convergence_speed.json
+
+✓ Done.
+ Done: 8_convergence_speed.py  (exit 0)
+
+======================================================
+ All analysis done: Wed May 20 01:53:44 PM EEST 2026
+ Results:
+total 40K
+drwxrws--- 2 moeinifa project_465002989 4.0K May 20 10:38 attention
+drwxrws--- 2 moeinifa project_465002989 4.0K May 20 11:20 convergence
+drwxrws--- 2 moeinifa project_465002989 4.0K May 19 20:31 figures
+-rw-rw---- 1 moeinifa project_465002989  14K May 19 20:31 results_raw.json
+drwxrws--- 2 moeinifa project_465002989 4.0K May 20 11:23 speedup
+drwxrws--- 2 moeinifa project_465002989 4.0K May 19 22:09 tables
+drwxrws--- 2 moeinifa project_465002989 4.0K May 19 19:05 trajectories
+======================================================

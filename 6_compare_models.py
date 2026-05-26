@@ -2,12 +2,21 @@
 """
 compare_models.py — LUMI version
 =================================
-Compares all neural models + baselines. Outputs 3 plain text tables + figures.
+Compares all neural models + baselines. Outputs 3 LaTeX tables + figures.
 
 Tables:
-  table1_cross_topology.txt    — BA/ER/WS × Z ∈ {2,8,16,32}, hub placement
-  table2_zealot_placement.txt  — BA, Hub / Bridge / Random × Z ∈ {2,8,16,32}
-  table3_size_generalization.txt — all topologies × N ∈ {256,512,1024,2048,4096}
+  table1_cross_topology.tex    — BA/ER/WS × Z ∈ {2,8,16,32}, hub placement
+  table2_zealot_placement.tex  — BA, Hub / Bridge / Random × Z ∈ {2,8,16,32}
+  table3_size_generalization.tex — all topologies × N ∈ {256,512,1024,2048,4096}
+
+Usage on LUMI:
+  python compare_models.py \\
+      --zt_checkpoint          saved_models/zealot_transformer.pt \\
+      --spectral_lstm_checkpoint saved_models/universal_lstm.pt \\
+      --pa_lstm_checkpoint       saved_models/pa-lstm.pt \\
+      --spec_low_checkpoint      saved_models/specialist_low_z2.pt \\
+      --global_gat_checkpoint    saved_models/global_no_cond.pt \\
+      --eval_sizes
 
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """
@@ -32,8 +41,7 @@ warnings.filterwarnings("ignore")
 # Constants
 # ─────────────────────────────────────────────────────────────
 ALL_Z         = [2, 8, 16, 32]
-SIZE_LIST     = [256, 512, 1024, 2048, 4096]
-TRAIN_N       = 1024
+SIZE_LIST     = [256, 512, 1024, 2048]
 T_STEPS       = 50
 NODE_FEAT_DIM = 5
 TOPOLOGIES    = ["ba", "er", "ws"]
@@ -371,7 +379,7 @@ def get_zealot_set(G, placement, Z, rng):
         return place_random(G, Z, rng)
 
 
-def simulate_trajectory(G, zealot_set, T=T_STEPS, mc_runs=128, seed=None):
+def simulate_trajectory(G, zealot_set, T=T_STEPS, mc_runs=20, seed=None):
     rng   = np.random.default_rng(seed)
     N_g   = G.number_of_nodes()
     adj   = [list(G.neighbors(i)) for i in range(N_g)]
@@ -443,13 +451,6 @@ def _fiedler_vector(G):
 
 
 def compute_pa_desc_11d(G, Z, n, topo, zealot_set):
-    """
-    11D descriptor for PA-LSTM.
-    Must match train_placement_aware_lstm.py EXACTLY:
-      9.  hub_score    = mean_deg(zealots) / mean_deg(all)
-      10. bridge_score = mean_btwn(zealots) / mean_btwn(all)
-      11. fiedler_score = mean|fiedler[zealots]|
-    """
     base    = compute_spectral_desc_8d(G, Z, n, topo)
     degrees = np.array([d for _, d in G.degree()], dtype=np.float64)
     mean_deg = degrees.mean()
@@ -484,7 +485,6 @@ def compute_node_features_5d(G, zealot_set):
     for nd in zealot_set:
         z_i[nd] = 1.0
     fiedler = _fiedler_vector(G)
-    # PageRank proxy = degree (exact PageRank too slow at N=2048+)
     pr = deg_n.copy()
     try:
         if N_g <= 1000:
@@ -566,7 +566,6 @@ def rollout_spectral_lstm(model, norm_stats, G, Z, n, topo, device):
 def rollout_pa_lstm(model, norm_stats, G, Z, n, topo, zealot_set, device):
     desc = compute_pa_desc_11d(G, Z, n, topo, zealot_set)
     desc = normalize_desc(desc[np.newaxis, :], norm_stats)
-    # Sanity check
     if np.any(np.abs(desc) > 10):
         print(f"    WARNING: PA-LSTM desc out of range "
               f"(max={np.abs(desc).max():.1f})")
@@ -592,17 +591,13 @@ def rollout_zt(model, G, zealot_set, device):
 
 def evaluate_cell(loaded, topo, placement, Z, n, mc_runs, val_graphs,
                   device, seed_base=42):
-    """
-    Returns gt_list (list of arrays) and pred_dict (name → list of arrays).
-    """
     gt_list   = []
     pred_dict = {name: [] for name in TABLE_MODELS}
 
     for g_idx in range(val_graphs):
         seed = seed_base + g_idx * 1000 + abs(hash((topo, placement, Z, n))) % 1000
         rng  = np.random.default_rng(seed)
-        G    = make_graph(topo, n, m=max(4, 8 * n // TRAIN_N),
-                          seed=int(rng.integers(0, 99999)))
+        G    = make_graph(topo, n, m=8, seed=int(rng.integers(0, 99999)))
         zs   = get_zealot_set(G, placement, Z, rng)
         gt   = simulate_trajectory(G, zs, T=T_STEPS, mc_runs=mc_runs, seed=seed+1)
         gt_list.append(gt)
@@ -650,143 +645,159 @@ def rmse_stats(gt_list, pred_list):
 
 
 # ═════════════════════════════════════════════════════════════
-# PLAIN TEXT TABLE GENERATION (NO LATEX)
+# LaTeX table generation
 # ═════════════════════════════════════════════════════════════
 
-def _txt_fmt(mean, std, is_best=False):
+def _fmt(mean, std, bold=False):
     if np.isnan(mean):
-        return "N/A"
-    s = f"{mean:.3f}±{std:.3f}"
-    return f"*{s}*" if is_best else s
+        return "---"
+    s = f"{mean:.3f}$\\pm${std:.3f}"
+    return f"\\textbf{{{s}}}" if bold else s
 
 
-def _txt_best_in_row(row_vals):
-    valids = [v[0] for v in row_vals.values() if not np.isnan(v[0])]
-    return min(valids) if valids else float("inf")
+def _best_in_row(row_vals):
+    valids = [v for v in row_vals.values() if not np.isnan(v)]
+    return min(valids) if valids else float("nan")
 
 
-def write_text_table_1(results, out_path, models_in_table, val_graphs, mc_runs, N):
-    """Plain text table for cross-topology (hub placement)"""
-    with open(out_path, "w") as f:
-        f.write("=" * 120 + "\n")
-        f.write("TABLE 1: Cross-topology RMSE (hub placement)\n")
-        f.write(f"N={N}, val_graphs={val_graphs}, MC runs={mc_runs}\n")
-        f.write("=" * 120 + "\n\n")
-        
-        # Header
-        header = f"{'Z':>4}"
+def write_table_1(results, out_path, models_in_table, val_graphs, mc_runs, N):
+    n_models  = len(models_in_table)
+    col_spec  = "c|" + "|".join(["c" * n_models] * 3)
+    topo_span = f"\\multicolumn{{{n_models}}}{{c|}}"
+    topo_last = f"\\multicolumn{{{n_models}}}{{c}}"
+    hdr_models = " & ".join(TABLE_HEADERS.get(m, m) for m in models_in_table)
+
+    lines = [
+        "\\begin{table}[htb]",
+        "\\centering",
+        "\\small",
+        f"\\caption{{Cross-topology RMSE (hub placement, $N={N}$, "
+        f"{val_graphs} graphs, {mc_runs} MC runs per graph). "
+        "Mean $\\pm$ std. \\textbf{Bold} = best per row per topology.}}",
+        "\\label{tab:cross_topology}",
+        f"\\begin{{tabular}}{{{col_spec}}}",
+        "\\hline",
+        f"\\multirow{{2}}{{*}}{{\\textbf{{Z}}}} & "
+        f"{topo_span}{{\\textbf{{BA}}}} & "
+        f"{topo_span}{{\\textbf{{ER}}}} & "
+        f"{topo_last}{{\\textbf{{WS}}}} \\\\",
+        "\\cline{2-" + str(1 + 3 * n_models) + "}",
+        "& " + " & ".join([hdr_models] * 3) + " \\\\",
+        "\\hline",
+    ]
+
+    for Z in ALL_Z:
+        row_parts = [str(Z)]
         for topo in ["ba", "er", "ws"]:
+            vals = {m: results.get((topo, "hub", Z, m), (float("nan"), 0))[0]
+                    for m in models_in_table}
+            best = _best_in_row(vals)
             for m in models_in_table:
-                short = TABLE_HEADERS.get(m, m[:8])
-                header += f"  {topo.upper()}_{short:>12}"
-        f.write(header + "\n")
-        f.write("-" * 120 + "\n")
-        
-        for Z in ALL_Z:
-            row = f"{Z:>4}"
-            for topo in ["ba", "er", "ws"]:
-                vals = {}
-                for m in models_in_table:
-                    mean, _ = results.get((topo, "hub", Z, m), (float("nan"), 0))
-                    vals[m] = mean
-                best = _txt_best_in_row(vals)
-                for m in models_in_table:
-                    mean, std = results.get((topo, "hub", Z, m), (float("nan"), float("nan")))
-                    if np.isnan(mean):
-                        cell = "      N/A      "
-                    else:
-                        is_best = (abs(mean - best) < 1e-6)
-                        cell = _txt_fmt(mean, std, is_best)
-                    row += f"  {cell:>14}"
-            f.write(row + "\n")
-        
-        f.write("-" * 120 + "\n")
-        f.write("* = best per row per topology\n")
+                mean, std = results.get((topo, "hub", Z, m),
+                                        (float("nan"), float("nan")))
+                row_parts.append(_fmt(mean, std,
+                                      bold=not np.isnan(mean) and
+                                          abs(mean - best) < 1e-6))
+        lines.append(" & ".join(row_parts) + " \\\\")
+
+    lines += ["\\hline", "\\end{tabular}", "\\end{table}"]
+    with open(out_path, "w") as f:
+        f.write("\n".join(lines) + "\n")
     print(f"  Saved: {out_path}")
 
 
-def write_text_table_2(results, out_path, models_in_table, val_graphs, mc_runs, N):
-    """Plain text table for zealot placement"""
-    placements = ["hub", "random", "bridge"]
-    pl_labels = {"hub": "Hub", "random": "Random", "bridge": "Bridge"}
-    
-    with open(out_path, "w") as f:
-        f.write("=" * 140 + "\n")
-        f.write("TABLE 2: Zealot placement RMSE on Barabási–Albert networks\n")
-        f.write(f"N={N}, val_graphs={val_graphs}, MC runs={mc_runs}\n")
-        f.write("=" * 140 + "\n\n")
-        
-        # Header
-        header = f"{'Z':>4}"
-        for pl in placements:
+def write_table_2(results, out_path, models_in_table, val_graphs, mc_runs, N):
+    placements_used = ["hub", "bridge", "random"]
+    pl_labels = {"hub": "Hub", "bridge": "Bridge", "random": "Random"}
+    n_models  = len(models_in_table)
+    col_spec  = "c|" + "|".join(["c" * n_models] * len(placements_used))
+    hdr_models = " & ".join(TABLE_HEADERS.get(m, m) for m in models_in_table)
+
+    lines = [
+        "\\begin{table}[htb]",
+        "\\centering",
+        "\\small",
+        f"\\caption{{Zealot placement RMSE on Barab\\'as\\i{{}}--Albert networks "
+        f"($N={N}$, {val_graphs} graphs, {mc_runs} MC runs). "
+        "Mean $\\pm$ std. \\textbf{Bold} = best per row per placement.}}",
+        "\\label{tab:zealot_placement}",
+        f"\\begin{{tabular}}{{{col_spec}}}",
+        "\\hline",
+    ]
+    spans = []
+    for i, pl in enumerate(placements_used):
+        sep = "c|" if i < len(placements_used) - 1 else "c"
+        spans.append(f"\\multicolumn{{{n_models}}}{{{sep}}}"
+                     f"{{\\textbf{{{pl_labels[pl]}}}}}")
+    lines.append("\\multirow{2}{*}{\\textbf{Z}} & " +
+                 " & ".join(spans) + " \\\\")
+    lines.append("\\cline{2-" + str(1 + len(placements_used) * n_models) + "}")
+    lines.append("& " + " & ".join([hdr_models] * len(placements_used)) + " \\\\")
+    lines.append("\\hline")
+
+    for Z in ALL_Z:
+        row_parts = [str(Z)]
+        for pl in placements_used:
+            vals = {m: results.get(("ba", pl, Z, m), (float("nan"), 0))[0]
+                    for m in models_in_table}
+            best = _best_in_row(vals)
             for m in models_in_table:
-                short = TABLE_HEADERS.get(m, m[:8])
-                header += f"  {pl_labels[pl][:6]}_{short:>12}"
-        f.write(header + "\n")
-        f.write("-" * 140 + "\n")
-        
-        for Z in ALL_Z:
-            row = f"{Z:>4}"
-            for pl in placements:
-                vals = {}
-                for m in models_in_table:
-                    mean, _ = results.get(("ba", pl, Z, m), (float("nan"), 0))
-                    vals[m] = mean
-                best = _txt_best_in_row(vals)
-                for m in models_in_table:
-                    mean, std = results.get(("ba", pl, Z, m), (float("nan"), float("nan")))
-                    if np.isnan(mean):
-                        cell = "      N/A      "
-                    else:
-                        is_best = (abs(mean - best) < 1e-6)
-                        cell = _txt_fmt(mean, std, is_best)
-                    row += f"  {cell:>14}"
-            f.write(row + "\n")
-        
-        f.write("-" * 140 + "\n")
-        f.write("* = best per row per placement\n")
+                mean, std = results.get(("ba", pl, Z, m),
+                                        (float("nan"), float("nan")))
+                row_parts.append(_fmt(mean, std,
+                                      bold=not np.isnan(mean) and
+                                          abs(mean - best) < 1e-6))
+        lines.append(" & ".join(row_parts) + " \\\\")
+
+    lines += ["\\hline", "\\end{tabular}", "\\end{table}"]
+    with open(out_path, "w") as f:
+        f.write("\n".join(lines) + "\n")
     print(f"  Saved: {out_path}")
 
 
-def write_text_table_3(results, out_path, models_in_table, val_graphs, mc_runs, Z_sz=8):
-    """Plain text table for size generalization"""
-    with open(out_path, "w") as f:
-        f.write("=" * 120 + "\n")
-        f.write(f"TABLE 3: Size generalization RMSE (hub placement, Z={Z_sz})\n")
-        f.write(f"val_graphs={val_graphs}, MC runs={mc_runs}\n")
-        f.write("=" * 120 + "\n\n")
-        
-        # Header
-        header = f"{'N':>6}"
+def write_table_3(results_gen, out_path, models_in_table, val_graphs, mc_runs):
+    n_models  = len(models_in_table)
+    col_spec  = "c|" + "|".join(["c" * n_models] * 3)
+    topo_span = f"\\multicolumn{{{n_models}}}{{c|}}"
+    topo_last = f"\\multicolumn{{{n_models}}}{{c}}"
+    hdr_models = " & ".join(TABLE_HEADERS.get(m, m) for m in models_in_table)
+
+    lines = [
+        "\\begin{table}[htb]",
+        "\\centering",
+        "\\small",
+        f"\\caption{{Size generalization RMSE (hub placement, $Z=8$, "
+        f"{val_graphs} graphs, {mc_runs} MC runs). "
+        "\\textbf{Bold} = best per row per topology.}}",
+        "\\label{tab:size_generalization}",
+        f"\\begin{{tabular}}{{{col_spec}}}",
+        "\\hline",
+        f"\\multirow{{2}}{{*}}{{\\textbf{{N}}}} & "
+        f"{topo_span}{{\\textbf{{BA}}}} & "
+        f"{topo_span}{{\\textbf{{ER}}}} & "
+        f"{topo_last}{{\\textbf{{WS}}}} \\\\",
+        "\\cline{2-" + str(1 + 3 * n_models) + "}",
+        "& " + " & ".join([hdr_models] * 3) + " \\\\",
+        "\\hline",
+    ]
+
+    for n_val in SIZE_LIST:
+        row_parts = [str(n_val)]
         for topo in ["ba", "er", "ws"]:
+            vals = {m: results_gen.get((topo, n_val, m), (float("nan"), 0))[0]
+                    for m in models_in_table}
+            best = _best_in_row(vals)
             for m in models_in_table:
-                short = TABLE_HEADERS.get(m, m[:8])
-                header += f"  {topo.upper()}_{short:>12}"
-        f.write(header + "\n")
-        f.write("-" * 120 + "\n")
-        
-        for n_val in SIZE_LIST:
-            mark = "†" if n_val == TRAIN_N else ""
-            row = f"{n_val:>5}{mark}"
-            for topo in ["ba", "er", "ws"]:
-                vals = {}
-                for m in models_in_table:
-                    mean, _ = results.get((topo, n_val, m), (float("nan"), 0))
-                    vals[m] = mean
-                best = _txt_best_in_row(vals)
-                for m in models_in_table:
-                    mean, std = results.get((topo, n_val, m), (float("nan"), float("nan")))
-                    if np.isnan(mean):
-                        cell = "      N/A      "
-                    else:
-                        is_best = (abs(mean - best) < 1e-6)
-                        cell = _txt_fmt(mean, std, is_best)
-                    row += f"  {cell:>14}"
-            f.write(row + "\n")
-        
-        f.write("-" * 120 + "\n")
-        f.write("* = best per row per topology\n")
-        f.write("† = training size (N=1024)\n")
+                mean, std = results_gen.get((topo, n_val, m),
+                                            (float("nan"), float("nan")))
+                row_parts.append(_fmt(mean, std,
+                                      bold=not np.isnan(mean) and
+                                          abs(mean - best) < 1e-6))
+        lines.append(" & ".join(row_parts) + " \\\\")
+
+    lines += ["\\hline", "\\end{tabular}", "\\end{table}"]
+    with open(out_path, "w") as f:
+        f.write("\n".join(lines) + "\n")
     print(f"  Saved: {out_path}")
 
 
@@ -851,7 +862,7 @@ def parse_args():
     p.add_argument("--spec_low_checkpoint",        type=str, default=None)
     p.add_argument("--global_gat_checkpoint",      type=str, default=None)
     p.add_argument("--n",          type=int,   default=1024)
-    p.add_argument("--mc_runs",    type=int,   default=64)
+    p.add_argument("--mc_runs",    type=int,   default=128)
     p.add_argument("--val_graphs", type=int,   default=10)
     p.add_argument("--out_dir",    type=str,   default="result")
     p.add_argument("--seed",       type=int,   default=42)
@@ -912,7 +923,6 @@ def main():
 
     loaded["ZealotTransformer"] = load_zt(args.zt_checkpoint, device)
 
-    # Models to show in all tables
     models_in_table = [m for m in TABLE_MODELS
                        if m in ("Persistence", "Mean-Field ODE") or
                           loaded.get(m) is not None]
@@ -979,30 +989,27 @@ def main():
                 print(f"    {name:<22}  {m:.4f}±{s:.4f}")
             print(f"    ({time.time()-t1:.0f}s)", flush=True)
 
-    # Save Tables 1 & 2 (PLAIN TEXT)
-    write_text_table_1(results_topo,
-                       os.path.join(tbl_dir, "table1_cross_topology.txt"),
-                       models_in_table, args.val_graphs, args.mc_runs, args.n)
-    write_text_table_2(results_topo,
-                       os.path.join(tbl_dir, "table2_zealot_placement.txt"),
-                       models_in_table, args.val_graphs, args.mc_runs, args.n)
+    write_table_1(results_topo,
+                  os.path.join(tbl_dir, "table1_cross_topology.tex"),
+                  models_in_table, args.val_graphs, args.mc_runs, args.n)
+    write_table_2(results_topo,
+                  os.path.join(tbl_dir, "table2_zealot_placement.tex"),
+                  models_in_table, args.val_graphs, args.mc_runs, args.n)
 
     # ── Experiment 3: Size generalization ─────────────────────
     results_gen = {}
     if args.eval_sizes:
         print("\n" + "="*60)
         print("EXPERIMENT 3 + TABLE 3: Size Generalization (hub, Z=8)")
-        print("ALL TOPOLOGIES: BA, ER, WS")
         print("="*60)
-        Z_sz   = 8
-        total  = len(TOPOLOGIES) * len(SIZE_LIST)
-        done   = 0
+        Z_sz  = 8
+        total = len(TOPOLOGIES) * len(SIZE_LIST)
+        done  = 0
         for topo in TOPOLOGIES:
             for n_val in SIZE_LIST:
                 done += 1
-                mark = " ←TRAIN" if n_val == TRAIN_N else ""
                 print(f"\n  [{done}/{total}]  topo={topo}  N={n_val}"
-                      f"  Z={Z_sz}{mark}", flush=True)
+                      f"  Z={Z_sz}", flush=True)
                 t1 = time.time()
                 gt_list, pred_dict = evaluate_cell(
                     loaded, topo, "hub", Z_sz, n_val,
@@ -1019,9 +1026,9 @@ def main():
                     print(f"    {name:<22}  {m:.4f}±{s:.4f}")
                 print(f"    ({time.time()-t1:.0f}s)", flush=True)
 
-        write_text_table_3(results_gen,
-                           os.path.join(tbl_dir, "table3_size_generalization.txt"),
-                           models_in_table, args.val_graphs, args.mc_runs)
+        write_table_3(results_gen,
+                      os.path.join(tbl_dir, "table3_size_generalization.tex"),
+                      models_in_table, args.val_graphs, args.mc_runs)
 
     # ── Trajectory figure ──────────────────────────────────────
     print("\n[Plot] BA trajectory figure (hub placement)...")
@@ -1041,10 +1048,10 @@ def main():
     total_t = time.time() - t0_all
     print(f"\n✓ Done in {total_t:.0f}s ({total_t/60:.1f} min)")
     print(f"\nOutputs in {args.out_dir}/:")
-    print(f"  tables/table1_cross_topology.txt")
-    print(f"  tables/table2_zealot_placement.txt")
+    print(f"  tables/table1_cross_topology.tex")
+    print(f"  tables/table2_zealot_placement.tex")
     if args.eval_sizes:
-        print(f"  tables/table3_size_generalization.txt")
+        print(f"  tables/table3_size_generalization.tex")
     print(f"  figures/ba_trajectories_gt_vs_zt.pdf")
     print(f"  results_raw.json")
 
