@@ -14,8 +14,8 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=60G
 #SBATCH --time=16:00:00
-#SBATCH --output=6_eval_small_output.txt
-#SBATCH --error=6_eval_small_error.txt
+#SBATCH --output=6_BA_ZA_odd.txt
+#SBATCH --error=6_BA_ZA_odd_error.txt
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=v.moeinifar@agh.edu.pl
 
@@ -64,16 +64,16 @@ cd "${WORK_DIR}"
 # -----------------------------------------------------------------------------
 SAVED="${WORK_DIR}/saved_models"
 
+
 ZT_CKPT="${SAVED}/zealot_transformer.pt"
-SPECTRAL_LSTM_CKPT="${SAVED}/SpectralLSTM.pt"
-PA_LSTM_CKPT="${SAVED}/pa-lstm.pt"
-SPEC_LOW_CKPT="${SAVED}/specialist_low_z2.pt"
-GLOBAL_GAT_CKPT="${SAVED}/Global-GAT.pt"
+ZT_CKPT="${SAVED}/zealot_transformer_1024_BA.pt"
+SPECTRAL_LSTM_CKPT=""
+PA_LSTM_CKPT=""
+SPEC_LOW_CKPT=""
+GLOBAL_GAT_CKPT=""
 
 
-
-
-OUT_DIR="${WORK_DIR}/result/"
+OUT_DIR="${WORK_DIR}/result/BA-ZA/tr"
 mkdir -p "${OUT_DIR}"
 
 # -----------------------------------------------------------------------------
@@ -95,10 +95,10 @@ if torch.cuda.is_available():
 
 echo ""
 echo "[check] Script file:"
-if [ -f "${WORK_DIR}/6_all_results_tr.py" ]; then
-    echo "  FOUND   ${WORK_DIR}/6_all_results_tr.py"
+if [ -f "${WORK_DIR}/6_BA_ZA_tr.py" ]; then
+    echo "  FOUND   ${WORK_DIR}/6_BA_ZA_tr.py"
 else
-    echo "  MISSING ${WORK_DIR}/6_all_results_tr.py"
+    echo "  MISSING ${WORK_DIR}/6_BA_ZA_tr.py"
     exit 1
 fi
 
@@ -144,7 +144,7 @@ sys.path.insert(0, '${PYG_PKGS}')
 import os, runpy
 
 sys.argv = [
-    '6_all_results_tr.py',
+    '6_BA_ZA_tr.py',
     '--zt_checkpoint',              '${ZT_CKPT}',
     '--spectral_lstm_checkpoint',   '${SPECTRAL_LSTM_CKPT}',
     '--pa_lstm_checkpoint',         '${PA_LSTM_CKPT}',
@@ -158,7 +158,7 @@ sys.argv = [
 ]
 
 print(f"  [argv] {' '.join(sys.argv)}\n")
-runpy.run_path('${WORK_DIR}/6_all_results_tr.py', run_name='__main__')
+runpy.run_path('${WORK_DIR}/6_BA_ZA_tr.py', run_name='__main__')
 PYEOF
 
 EXIT_CODE=$?

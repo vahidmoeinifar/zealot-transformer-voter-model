@@ -1,21 +1,21 @@
 #!/bin/bash
 # =============================================================================
-#  LUMI Supercomputer — SLURM Batch: SMALL NETWORKS (N ≤ 2048)
-#  Script: eval_small_graphs.py
-#  Tables 1, 2, 3, Suppl A, B
-#  MC runs: 128 (full precision — main paper tables)
+#  LUMI Supercomputer — SLURM Batch: Full ZT vs BA-only ZT Comparison
+#  Script: 6_BA_ZA_odd.py
+#  Tables: RGG (N=1024, Z=2,32), BA Large (N=4096,8192, Z=64,128)
+#  MC runs: 128
 # =============================================================================
-#SBATCH --job-name=eval_small
+#SBATCH --job-name=eval_ood
 #SBATCH --account=project_465002989
 #SBATCH --partition=standard-g
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --gpus-per-node=1
-#SBATCH --mem=60G
-#SBATCH --time=16:00:00
-#SBATCH --output=6_eval_small_output.txt
-#SBATCH --error=6_eval_small_error.txt
+#SBATCH --mem=120G
+#SBATCH --time=24:00:00
+#SBATCH --output=6_BA_ZA_odd.txt
+#SBATCH --error=6_BA_ZA_odd_error.txt
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=v.moeinifar@agh.edu.pl
 
@@ -24,7 +24,7 @@ set -euo pipefail
 echo "======================================================"
 echo " Job:     ${SLURM_JOB_NAME}  (${SLURM_JOB_ID})"
 echo " Node:    ${SLURM_NODELIST}"
-echo " Script:  eval_small_graphs.py — N ≤ 2048"
+echo " Script:  6_BA_ZA_odd.py"
 echo " Started: $(date)"
 echo "======================================================"
 
@@ -64,16 +64,14 @@ cd "${WORK_DIR}"
 # -----------------------------------------------------------------------------
 SAVED="${WORK_DIR}/saved_models"
 
-ZT_CKPT="${SAVED}/zealot_transformer.pt"
-SPECTRAL_LSTM_CKPT="${SAVED}/SpectralLSTM.pt"
-PA_LSTM_CKPT="${SAVED}/pa-lstm.pt"
-SPEC_LOW_CKPT="${SAVED}/specialist_low_z2.pt"
-GLOBAL_GAT_CKPT="${SAVED}/Global-GAT.pt"
+FULL_ZT_CKPT="${SAVED}/zealot_transformer.pt"
+BA_ONLY_ZT_CKPT="${SAVED}/zealot_transformer_1024_BA.pt"
+SPECTRAL_LSTM_CKPT=""
+PA_LSTM_CKPT=""
+SPEC_LOW_CKPT=""
+GLOBAL_GAT_CKPT=""
 
-
-
-
-OUT_DIR="${WORK_DIR}/result/"
+OUT_DIR="${WORK_DIR}/result/BA-ZA/odd"
 mkdir -p "${OUT_DIR}"
 
 # -----------------------------------------------------------------------------
@@ -95,10 +93,10 @@ if torch.cuda.is_available():
 
 echo ""
 echo "[check] Script file:"
-if [ -f "${WORK_DIR}/6_all_results_tr.py" ]; then
-    echo "  FOUND   ${WORK_DIR}/6_all_results_tr.py"
+if [ -f "${WORK_DIR}/6_BA_ZA_odd.py" ]; then
+    echo "  FOUND   ${WORK_DIR}/6_BA_ZA_odd.py"
 else
-    echo "  MISSING ${WORK_DIR}/6_all_results_tr.py"
+    echo "  MISSING ${WORK_DIR}/6_BA_ZA_odd.py"
     exit 1
 fi
 
@@ -106,7 +104,8 @@ echo ""
 echo "[check] Checkpoint files:"
 ALL_FOUND=true
 for CKPT in \
-    "${ZT_CKPT}" \
+    "${FULL_ZT_CKPT}" \
+    "${BA_ONLY_ZT_CKPT}" \
     "${SPECTRAL_LSTM_CKPT}" \
     "${PA_LSTM_CKPT}" \
     "${SPEC_LOW_CKPT}" \
@@ -119,9 +118,14 @@ for CKPT in \
     fi
 done
 
-if [ ! -f "${ZT_CKPT}" ]; then
+if [ ! -f "${FULL_ZT_CKPT}" ]; then
     echo ""
-    echo "ERROR: ZealotTransformer checkpoint not found — cannot continue."
+    echo "ERROR: Full ZealotTransformer checkpoint not found — cannot continue."
+    exit 1
+fi
+if [ ! -f "${BA_ONLY_ZT_CKPT}" ]; then
+    echo ""
+    echo "ERROR: BA-only ZealotTransformer checkpoint not found — cannot continue."
     exit 1
 fi
 if [ "${ALL_FOUND}" = false ]; then
@@ -135,7 +139,10 @@ fi
 echo ""
 echo "[run] $(date)"
 echo "------------------------------------------------------"
-echo "Target: Tables 1, 2, 3, Suppl A, B (N ≤ 2048)"
+echo "Comparing: Full ZT vs BA-only ZT"
+echo "  - RGG: N=1024, Z=2,32"
+echo "  - BA Large: N=4096,8192, Z=64,128"
+echo "MC runs: 128 per graph"
 echo ""
 
 python - << PYEOF
@@ -144,8 +151,9 @@ sys.path.insert(0, '${PYG_PKGS}')
 import os, runpy
 
 sys.argv = [
-    '6_all_results_tr.py',
-    '--zt_checkpoint',              '${ZT_CKPT}',
+    '6_BA_ZA_odd.py',
+    '--full_zt_checkpoint',         '${FULL_ZT_CKPT}',
+    '--ba_only_zt_checkpoint',      '${BA_ONLY_ZT_CKPT}',
     '--spectral_lstm_checkpoint',   '${SPECTRAL_LSTM_CKPT}',
     '--pa_lstm_checkpoint',         '${PA_LSTM_CKPT}',
     '--spec_low_checkpoint',        '${SPEC_LOW_CKPT}',
@@ -158,7 +166,7 @@ sys.argv = [
 ]
 
 print(f"  [argv] {' '.join(sys.argv)}\n")
-runpy.run_path('${WORK_DIR}/6_all_results_tr.py', run_name='__main__')
+runpy.run_path('${WORK_DIR}/6_BA_ZA_odd.py', run_name='__main__')
 PYEOF
 
 EXIT_CODE=$?
