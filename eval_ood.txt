@@ -1,8 +1,8 @@
 ======================================================
- Job:     eval_large  (18905731)
- Node:    nid005297
- Script:  eval_large_graphs.py — N ≥ 4096
- Started: Thu May 28 11:39:52 PM EEST 2026
+ Job:     eval_ood  (18905861)
+ Node:    nid005202
+ Script:  eval_ood_comparison.py
+ Started: Thu May 28 11:50:22 PM EEST 2026
 ======================================================
 Please note that there are severe license restrictions when using packages from
 the regular Anaconda repositories that apply to most users of LUMI. See the
@@ -25,4 +25,12 @@ Currently Loaded Modules:
 
   Where:
    S:  Module is Sticky, requires --force to unload or purge
-/var/spool/slurmd/job18905731/slurm_script: line 69: /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer_1024_BA.pt: Permission denied
+
+[check] Environment:
+torch:           2.9.1+rocm6.4
+torch_geometric: 2.7.0
+GPU available:   True
+GPU:             AMD Instinct MI250X  VRAM=68.7GB
+
+[check] Script file:
+  MISSING /scratch/project_465002989/GNN_Project/eval_ood_comparison.py

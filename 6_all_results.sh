@@ -154,7 +154,7 @@ sys.argv = [
     '--out_dir',                    '${OUT_DIR}',
     '--workers',                    '16',
     '--seed',                       '42',
-    '--mc_runs',                    '32',
+    '--mc_runs',                    '128',
     '--val_graphs',                 '10',
 ]
 

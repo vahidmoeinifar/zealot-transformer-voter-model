@@ -4,4 +4,3 @@ user documentation section on
 https://lumi-supercomputer.github.io/LUMI-EasyBuild-docs/l/lumi-container-wrapper/
 for more information. Take this information seriously as it can have legal
 consquences for you and your institution. 
-slurmstepd: error: *** JOB 18904816 ON nid007475 CANCELLED AT 2026-05-28T22:38:18 ***

@@ -40,7 +40,9 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
 ALL_Z        = [2, 8, 16, 32]
-TRAIN_N_LIST = [256, 512, 1024, 2048]
+#TRAIN_N_LIST = [256, 512, 1024, 2048]
+TRAIN_N_LIST = [1024]
+
 TOPOLOGIES   = ['ba', 'er', 'ws']
 T_STEPS      = 50
 MC_RUNS      = 20

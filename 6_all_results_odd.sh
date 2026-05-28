@@ -1,12 +1,11 @@
 #!/bin/bash
 # =============================================================================
-#  LUMI Supercomputer — SLURM Batch: LARGE NETWORKS (N ≥ 4096)
-#  Script: eval_large_graphs.py
-#  Tables: Suppl C (OOD N=4096,8192), Suppl D (RGG N=1024,4096)
-#  MC runs: 32 (reduced — variance averages across 10 graphs)
-#  ⚠ Parallel MC within each graph — large N graphs split across workers
+#  LUMI Supercomputer — SLURM Batch: Full ZT vs BA-only ZT Comparison
+#  Script: 6_all_results_odd.py
+#  Tables: RGG (N=1024, Z=2,32), BA Large (N=4096,8192, Z=64,128)
+#  MC runs: 128
 # =============================================================================
-#SBATCH --job-name=eval_large
+#SBATCH --job-name=eval_ood
 #SBATCH --account=project_465002989
 #SBATCH --partition=standard-g
 #SBATCH --nodes=1
@@ -15,8 +14,8 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=120G
 #SBATCH --time=24:00:00
-#SBATCH --output=6_eval_large_output.txt
-#SBATCH --error=6_eval_large_error.txt
+#SBATCH --output=6_eval_ood.txt
+#SBATCH --error=6_eval_ood_error.txt
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=v.moeinifar@agh.edu.pl
 
@@ -25,7 +24,7 @@ set -euo pipefail
 echo "======================================================"
 echo " Job:     ${SLURM_JOB_NAME}  (${SLURM_JOB_ID})"
 echo " Node:    ${SLURM_NODELIST}"
-echo " Script:  eval_large_graphs.py — N ≥ 4096"
+echo " Script:  6_all_results_odd.py"
 echo " Started: $(date)"
 echo "======================================================"
 
@@ -65,13 +64,14 @@ cd "${WORK_DIR}"
 # -----------------------------------------------------------------------------
 SAVED="${WORK_DIR}/saved_models"
 
-ZT_CKPT="${SAVED}/zealot_transformer.pt"
+FULL_ZT_CKPT="${SAVED}/zealot_transformer.pt"
+BA_ONLY_ZT_CKPT="${SAVED}/zealot_transformer_1024_BA.pt"
 SPECTRAL_LSTM_CKPT="${SAVED}/SpectralLSTM.pt"
 PA_LSTM_CKPT="${SAVED}/pa-lstm.pt"
 SPEC_LOW_CKPT="${SAVED}/specialist_low_z2.pt"
 GLOBAL_GAT_CKPT="${SAVED}/Global-GAT.pt"
 
-OUT_DIR="${WORK_DIR}/result/table_large"
+OUT_DIR="${WORK_DIR}/result/ood_comparison"
 mkdir -p "${OUT_DIR}"
 
 # -----------------------------------------------------------------------------
@@ -104,7 +104,8 @@ echo ""
 echo "[check] Checkpoint files:"
 ALL_FOUND=true
 for CKPT in \
-    "${ZT_CKPT}" \
+    "${FULL_ZT_CKPT}" \
+    "${BA_ONLY_ZT_CKPT}" \
     "${SPECTRAL_LSTM_CKPT}" \
     "${PA_LSTM_CKPT}" \
     "${SPEC_LOW_CKPT}" \
@@ -117,9 +118,14 @@ for CKPT in \
     fi
 done
 
-if [ ! -f "${ZT_CKPT}" ]; then
+if [ ! -f "${FULL_ZT_CKPT}" ]; then
     echo ""
-    echo "ERROR: ZealotTransformer checkpoint not found — cannot continue."
+    echo "ERROR: Full ZealotTransformer checkpoint not found — cannot continue."
+    exit 1
+fi
+if [ ! -f "${BA_ONLY_ZT_CKPT}" ]; then
+    echo ""
+    echo "ERROR: BA-only ZealotTransformer checkpoint not found — cannot continue."
     exit 1
 fi
 if [ "${ALL_FOUND}" = false ]; then
@@ -133,10 +139,10 @@ fi
 echo ""
 echo "[run] $(date)"
 echo "------------------------------------------------------"
-echo "Target: Suppl C (N=4096,8192), Suppl D (RGG N=1024,4096)"
-echo "MC runs: 32 per graph (reduced — parallelized within graph)"
-echo "Memory:  120 GB (large graphs need more RAM)"
-echo "⚠ EXPECT LONG RUNTIME — N=8192 graphs are very slow"
+echo "Comparing: Full ZT vs BA-only ZT"
+echo "  - RGG: N=1024, Z=2,32"
+echo "  - BA Large: N=4096,8192, Z=64,128"
+echo "MC runs: 128 per graph"
 echo ""
 
 python - << PYEOF
@@ -146,7 +152,8 @@ import os, runpy
 
 sys.argv = [
     '6_all_results_odd.py',
-    '--zt_checkpoint',              '${ZT_CKPT}',
+    '--full_zt_checkpoint',         '${FULL_ZT_CKPT}',
+    '--ba_only_zt_checkpoint',      '${BA_ONLY_ZT_CKPT}',
     '--spectral_lstm_checkpoint',   '${SPECTRAL_LSTM_CKPT}',
     '--pa_lstm_checkpoint',         '${PA_LSTM_CKPT}',
     '--spec_low_checkpoint',        '${SPEC_LOW_CKPT}',
@@ -154,7 +161,7 @@ sys.argv = [
     '--out_dir',                    '${OUT_DIR}',
     '--workers',                    '16',
     '--seed',                       '42',
-    '--mc_runs',                    '32',
+    '--mc_runs',                    '128',
     '--val_graphs',                 '10',
 ]
 

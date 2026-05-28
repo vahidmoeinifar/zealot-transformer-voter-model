@@ -9,7 +9,7 @@
 # =============================================================================
 
 #SBATCH --job-name=graph_transformer_trainer
-#SBATCH --account=project_465002915
+#SBATCH --account=project_465002989
 #SBATCH --partition=standard-g
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -44,7 +44,7 @@ module list 2>&1 || true
 # -----------------------------------------------------------------------------
 # 2. Paths
 # -----------------------------------------------------------------------------
-WORK_DIR="/scratch/project_465002915/GNN_Project"
+WORK_DIR="/scratch/project_465002989/GNN_Project"
 WRAPPER_DIR="${WORK_DIR}/pyg-wrapper"
 PYG_PKGS="${WORK_DIR}/pyg-packages"
 
@@ -103,7 +103,7 @@ import sys
 sys.path.insert(0, '${PYG_PKGS}')
 import runpy
 sys.argv = [
-    'graph_transformer_trainer.py',
+    '5_ZealotTransformer.py',
     '--batch_size',   '64',
     '--epochs',       '300',
     '--lr',           '1e-3',
@@ -120,7 +120,7 @@ sys.argv = [
     '--save_dir',     'saved_models',
     '--save_name',    'zealot_transformer.pt',
 ]
-runpy.run_path('${WORK_DIR}/graph_transformer_trainer.py', run_name='__main__')
+runpy.run_path('${WORK_DIR}/5_ZealotTransformer.py', run_name='__main__')
 PYEOF
 
 EXIT_CODE=$?

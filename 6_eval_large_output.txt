@@ -1,8 +1,8 @@
 ======================================================
- Job:     eval_large  (18845968)
- Node:    nid005649
+ Job:     eval_large  (18904816)
+ Node:    nid007475
  Script:  eval_large_graphs.py — N ≥ 4096
- Started: Tue May 26 09:46:44 AM EEST 2026
+ Started: Thu May 28 10:36:13 PM EEST 2026
 ======================================================
 [modules] Loaded:
 
@@ -36,7 +36,7 @@ GPU:             AMD Instinct MI250X  VRAM=68.7GB
   FOUND   /scratch/project_465002989/GNN_Project/saved_models/specialist_low_z2.pt  (804K)
   FOUND   /scratch/project_465002989/GNN_Project/saved_models/Global-GAT.pt  (532K)
 
-[run] Tue May 26 09:47:52 AM EEST 2026
+[run] Thu May 28 10:37:14 PM EEST 2026
 ------------------------------------------------------
 Target: Suppl C (N=4096,8192), Suppl D (RGG N=1024,4096)
 MC runs: 32 per graph (reduced — parallelized within graph)
@@ -58,53 +58,11 @@ Loading models...
   ✓ PA-LSTM: /scratch/project_465002989/GNN_Project/saved_models/pa-lstm.pt
   ✓ ZealotTransformer: /scratch/project_465002989/GNN_Project/saved_models/zealot_transformer.pt
 
-Plan: 64 cells  (N ≥ 1024 for RGG, N ∈ {4096,8192} for OOD)
+Plan: 36 cells  (N ≥ 1024 for RGG, N ∈ {4096,8192} for OOD)
 
 
-  [  1/64]  pl=bridge   topo=ba    Z=  64 N=4096
-      graph 1/10... 120.1s
-      graph 2/10... 116.4s
-      graph 3/10... 116.6s
-      graph 4/10... 116.7s
-      graph 5/10... 117.1s
-      graph 6/10... 117.0s
-      graph 7/10... 117.0s
-      graph 8/10... 117.0s
-      graph 9/10... 117.3s
-      graph 10/10... 116.6s
-  → best_RMSE=0.0379  total=1172.0s
-
-  [  2/64]  pl=bridge   topo=ba    Z=  64 N=8192
-      graph 1/10... 546.3s
-      graph 2/10... 552.7s
-      graph 3/10...  [  20/50]  pl=random   topo=ba    Z= 128 N=8192  best_RMSE=0.0133  (3272.7s)
- 548.6s
-      graph 4/10... 549.2s
-      graph 5/10...  [  21/50]  pl=random   topo=er    Z=  64 N=4096  best_RMSE=0.0093  (778.0s)
- 550.8s
-      graph 6/10... 551.2s
-      graph 7/10... 549.9s
-      graph 8/10... 550.7s
-      graph 9/10... 548.9s
-      graph 10/10... 551.8s
-  → best_RMSE=0.0722  total=5500.1s
-
-  [  3/64]  pl=bridge   topo=ba    Z= 128 N=4096
-      graph 1/10... 118.5s
-      graph 2/10...  [  22/50]  pl=random   topo=er    Z=  64 N=8192  best_RMSE=0.0070  (3454.2s)
- 118.9s
-      graph 3/10... 119.0s
-      graph 4/10... 119.1s
-      graph 5/10... 118.7s
-      graph 6/10... 118.8s
-      graph 7/10... 118.9s
-      graph 8/10... 118.4s
-      graph 9/10...  [  23/50]  pl=random   topo=er    Z= 128 N=4096  best_RMSE=0.0100  (777.3s)
- 118.1s
-      graph 10/10... 118.7s
-  → best_RMSE=0.0277  total=1187.1s
-
-  [  4/64]  pl=bridge   topo=ba    Z= 128 N=8192
-      graph 1/10... 547.2s
-      graph 2/10... 544.9s
-      graph 3/10...
+  [  1/36]  pl=bridge   topo=rgg   Z=   2 N=1024
+      graph 1/10... 12.0s
+      graph 2/10... 7.2s
+      graph 3/10... 7.2s
+      graph 4/10...

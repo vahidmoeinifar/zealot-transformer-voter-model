@@ -1,36 +1,27 @@
 #!/usr/bin/env python3
 """
-eval_large_graphs.py — Evaluation for N ≥ 4096 (OOD large networks)
-=====================================================================
-Covers:
-  • Supplement C: OOD large N∈{4096,8192}, OOD Z∈{64,128}
-                  BA/ER/WS/RGG, bridge + random placement
-  • Supplement D: RGG topology at N∈{1024,4096}, all placements,
-                  trained Z∈{2,8,16,32} + OOD Z∈{64,128}
+eval_ood_comparison.py — Evaluate Full ZT vs BA-only ZT on OOD configurations
+================================================================================
+Evaluates:
+  • Supplement: RGG topology (unseen), N=1024, Z∈{2,32}, hub placement
+  • Supplement: BA large networks (unseen sizes), N∈{4096,8192}, Z∈{64,128}, hub placement
 
-MC runs: 32 (reduced — variance averages across VAL_GRAPHS=10 graphs;
-             sufficient for OOD supplement tables)
-Parallelism: workers split MC runs WITHIN each graph (batched),
-             so large-N graphs don't block a single worker for 3600s.
-
-Key difference from eval_small_graphs.py:
-  _simulate_mc_batch() splits MC_RUNS into worker_chunks,
-  each worker runs a subset of MC runs on the same graph.
-  Results are averaged across chunks.
-
-Outputs in result_large/tables/:
-  suppl_ood_large_n.txt
-  suppl_ood_rgg.txt
-  results_large_raw.json
+Compares:
+  - Full ZealotTransformer (trained on BA/ER/WS, multi-size, hub+random)
+  - BA-only ZealotTransformer (trained on BA only, N=1024 only, hub only)
+  - All baselines (SpectralLSTM, PA-LSTM, GlobalGAT, SpecLow, Persistence, MeanField)
 
 Usage:
-  python eval_large_graphs.py \\
-      --zt_checkpoint            saved_models/zealot_transformer.pt \\
+  python eval_ood_comparison.py \\
+      --full_zt_checkpoint       saved_models/zealot_transformer.pt \\
+      --ba_only_zt_checkpoint    saved_models/zealot_transformer_1024_BA.pt \\
       --spectral_lstm_checkpoint saved_models/universal_lstm.pt \\
       --pa_lstm_checkpoint       saved_models/pa-lstm.pt \\
+      --spec_low_checkpoint      saved_models/specialist_low.pt \\
+      --global_gat_checkpoint    saved_models/global_gat.pt \\
+      --out_dir result_ood \\
+      --mc_runs 128 \\
       --workers 16
-
-Author: Vahid Moeinifar (AGH University of Science and Technology)
 """
 
 import os, sys, json, time, argparse, warnings
@@ -51,26 +42,24 @@ warnings.filterwarnings("ignore")
 # ─────────────────────────────────────────────────────────────
 T_STEPS       = 50
 NODE_FEAT_DIM = 5
-MC_RUNS       = 32      # reduced for large N — good enough for OOD supplement
+MC_RUNS       = 128
 VAL_GRAPHS    = 10
 
-OOD_SIZES  = [4096, 8192]
-OOD_Z      = [64, 128]
-TRAINED_Z  = [2, 8, 16, 32]
-TRAINED_TOPOS = ["ba", "er", "ws"]
-OOD_TOPOS     = ["rgg"]
-PLACEMENTS    = ["hub", "random", "bridge"]
+# Large BA evaluation — UPDATED
+BA_LARGE_SIZES = [4096, 8192]
+BA_LARGE_Z     = [64, 128]
 
-TOPO_LABELS = {
-    "ba":  "Barabasi-Albert",
-    "er":  "Erdos-Renyi",
-    "ws":  "Watts-Strogatz",
-    "rgg": "Random-Geometric (OOD)",
-}
+# RGG evaluation
+RGG_SIZES      = [1024]
+RGG_Z          = [2, 32]
+
+# Model names for output
 MODEL_NAMES = [
     "Persistence", "MeanField",
     "SpecLow", "GlobalGAT",
-    "SpectralLSTM", "PA-LSTM", "ZealotTransformer",
+    "SpectralLSTM", "PA-LSTM",
+    "ZealotTransformer_Full",
+    "ZealotTransformer_BAonly",
 ]
 
 
@@ -82,14 +71,6 @@ def make_graph(topo, n, m=8, seed=None):
     rng_np = np.random.default_rng(seed)
     if topo == "ba":
         G = nx.barabasi_albert_graph(n, m, seed=seed)
-    elif topo == "er":
-        p = min(2 * m / (n - 1), 1.0)
-        for attempt in range(10):
-            G = nx.erdos_renyi_graph(
-                n, p, seed=(seed + attempt if seed is not None else None))
-            if nx.is_connected(G): break
-    elif topo == "ws":
-        G = nx.watts_strogatz_graph(n, max(4, 2 * m), p=0.1, seed=seed)
     elif topo == "rgg":
         r = np.sqrt(2 * m / (n * np.pi))
         for attempt in range(15):
@@ -106,37 +87,24 @@ def make_graph(topo, n, m=8, seed=None):
             G.subgraph(max(nx.connected_components(G), key=len)).copy())
     return G
 
+
 def place_hubs(G, Z):
     return set(n for n, _ in
                sorted(G.degree(), key=lambda x: x[1], reverse=True)[:Z])
 
-def place_bridges(G, Z):
-    btwn = nx.betweenness_centrality(G, normalized=True)
-    return set(sorted(btwn, key=btwn.get, reverse=True)[:Z])
-
-def place_random(G, Z, rng):
-    return set(int(nd) for nd in
-               rng.choice(list(G.nodes()), size=Z, replace=False))
 
 def get_zealot_set(G, placement, Z, rng):
-    if placement == "hub":     return place_hubs(G, Z)
-    elif placement == "bridge": return place_bridges(G, Z)
-    elif placement == "random": return place_random(G, Z, rng)
-    else: raise ValueError(f"Unknown placement: {placement}")
+    if placement == "hub":
+        return place_hubs(G, Z)
+    else:
+        raise ValueError(f"Only hub placement supported, got: {placement}")
 
 
 # ═════════════════════════════════════════════════════════════
 # Parallel MC — batched WITHIN each graph
-# Workers each run a slice of MC runs on the SAME graph structure.
-# This avoids one worker blocking for hours on a single N=8192 graph.
 # ═════════════════════════════════════════════════════════════
 
 def _mc_batch(args):
-    """
-    Run a batch of MC runs on a pre-built graph.
-    adj, is_z, non_z are passed directly (picklable as lists/arrays).
-    Returns mean trajectory over this batch.
-    """
     adj, is_z_arr, non_z, n_runs, T, seed = args
     rng   = np.random.default_rng(seed)
     N_g   = len(adj)
@@ -157,17 +125,13 @@ def _mc_batch(args):
 
 
 def simulate_graph_parallel(G, zealot_set, mc_runs, workers, seed):
-    """
-    Split mc_runs across workers. Each worker simulates a chunk.
-    Returns mean trajectory over all mc_runs.
-    """
     N_g   = G.number_of_nodes()
     adj   = [list(G.neighbors(i)) for i in range(N_g)]
     is_z  = np.zeros(N_g, dtype=np.float32)
-    for z in zealot_set: is_z[z] = 1.0
+    for z in zealot_set:
+        is_z[z] = 1.0
     non_z = np.where(is_z == 0)[0]
 
-    # Split mc_runs into chunks
     chunk_size = max(1, mc_runs // workers)
     chunks     = []
     remaining  = mc_runs
@@ -181,7 +145,6 @@ def simulate_graph_parallel(G, zealot_set, mc_runs, workers, seed):
     with Pool(processes=min(workers, len(chunks))) as pool:
         batch_means = pool.map(_mc_batch, chunks)
 
-    # Weighted average across chunks
     sizes  = [c[3] for c in chunks]
     total  = sum(sizes)
     result = sum(m * s / total for m, s in zip(batch_means, sizes))
@@ -189,7 +152,6 @@ def simulate_graph_parallel(G, zealot_set, mc_runs, workers, seed):
 
 
 def build_graph_record(topo, placement, Z, n, g_idx, seed_base, mc_runs, workers):
-    """Build one graph, run MC, return record for model inference."""
     seed = seed_base + g_idx * 1000 + abs(hash((topo, placement, Z, n))) % 9999
     rng  = np.random.default_rng(seed)
     try:
@@ -228,11 +190,12 @@ def _spectral_gap(G):
     except Exception:
         return 0.0
 
+
 def _fiedler_vector(G):
     n   = G.number_of_nodes()
     deg = np.array([d for _, d in G.degree()], dtype=np.float32)
-    # Always use degree proxy for large graphs
     return deg / (deg.max() + 1e-8)
+
 
 def compute_spectral_8d(G, Z, n, topo):
     deg = np.array([d for _, d in G.degree()], dtype=np.float64)
@@ -240,10 +203,11 @@ def compute_spectral_8d(G, Z, n, topo):
     return np.array([
         Z / n, _spectral_gap(G), mu / n,
         deg.std() / (mu + 1e-8), nx.average_clustering(G),
-        1.0 if topo=="ba" else 0.0,
-        1.0 if topo=="er" else 0.0,
-        1.0 if topo=="ws" else 0.0,
+        1.0 if topo == "ba" else 0.0,
+        0.0,
+        0.0,
     ], dtype=np.float32)
+
 
 def compute_pa_11d(G, Z, n, topo, zealot_set):
     base = compute_spectral_8d(G, Z, n, topo)
@@ -263,32 +227,36 @@ def compute_pa_11d(G, Z, n, topo, zealot_set):
                 if zl and len(fiedler) == n else 0.0
     return np.concatenate([base, [hub_s, bridge_s, fiedler_s]]).astype(np.float32)
 
+
 def compute_node_features_5d(G, zealot_set):
     N_g   = G.number_of_nodes()
     deg   = np.array([d for _, d in G.degree()], dtype=np.float32)
     dn    = deg / (deg.max() + 1e-8)
     z_i   = np.zeros(N_g, dtype=np.float32)
-    for nd in zealot_set: z_i[nd] = 1.0
+    for nd in zealot_set:
+        z_i[nd] = 1.0
     fiedler = _fiedler_vector(G)
-    # Skip PageRank for large graphs (too slow)
     pr    = dn.copy()
     clust = np.zeros(N_g, dtype=np.float32)
     try:
         if N_g <= 2000:
             cd = nx.clustering(G)
             clust = np.array([cd[i] for i in range(N_g)], dtype=np.float32)
-    except Exception: pass
+    except Exception:
+        pass
     return np.stack([z_i, dn, fiedler, pr, clust], axis=1).astype(np.float32)
 
+
 def normalize_desc(desc, stats):
-    if stats is None: return desc
+    if stats is None:
+        return desc
     mean = np.asarray(stats[0], dtype=np.float32)
     std  = np.asarray(stats[1], dtype=np.float32)
     return (desc - mean) / (std + 1e-8)
 
 
 # ═════════════════════════════════════════════════════════════
-# Model architectures (same as eval_small_graphs.py)
+# Model architectures
 # ═════════════════════════════════════════════════════════════
 
 class LocalGATModel(nn.Module):
@@ -296,7 +264,7 @@ class LocalGATModel(nn.Module):
         super().__init__()
         self.dropout = dropout
         out_ch = hidden_dim // 4
-        self.conv1 = GATConv(3,          out_ch, heads=4, dropout=dropout)
+        self.conv1 = GATConv(3, out_ch, heads=4, dropout=dropout)
         self.ln1   = nn.LayerNorm(hidden_dim)
         self.conv2 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
         self.ln2   = nn.LayerNorm(hidden_dim)
@@ -305,126 +273,154 @@ class LocalGATModel(nn.Module):
         self.conv4 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
         self.ln4   = nn.LayerNorm(hidden_dim)
         self.out   = GATConv(hidden_dim, 1, heads=1, concat=False, dropout=dropout)
+
     def forward(self, x, edge_index):
-        h  = F.elu(self.conv1(x, edge_index)); h = self.ln1(h)
+        h  = F.elu(self.conv1(x, edge_index))
+        h  = self.ln1(h)
         h  = F.dropout(h, p=self.dropout, training=self.training)
-        h1 = F.elu(self.conv2(h, edge_index)); h = self.ln2(h + h1)
+        h1 = F.elu(self.conv2(h, edge_index))
+        h  = self.ln2(h + h1)
         h  = F.dropout(h, p=self.dropout, training=self.training)
-        h2 = F.elu(self.conv3(h, edge_index)); h = self.ln3(h + h2)
+        h2 = F.elu(self.conv3(h, edge_index))
+        h  = self.ln3(h + h2)
         h  = F.dropout(h, p=self.dropout, training=self.training)
-        h3 = F.elu(self.conv4(h, edge_index)); h = self.ln4(h + h3)
+        h3 = F.elu(self.conv4(h, edge_index))
+        h  = self.ln4(h + h3)
         h  = F.dropout(h, p=self.dropout, training=self.training)
         return torch.sigmoid(self.out(h, edge_index)).squeeze(-1)
+
 
 class GlobalGATModel(nn.Module):
     def __init__(self, hidden_dim=256, dropout=0.0):
         super().__init__()
         out_ch = hidden_dim // 4
-        self.conv1 = GATConv(3,          out_ch, heads=4, dropout=dropout)
+        self.conv1 = GATConv(3, out_ch, heads=4, dropout=dropout)
         self.conv2 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
         self.conv3 = GATConv(hidden_dim, out_ch, heads=4, dropout=dropout)
         self.out   = GATConv(hidden_dim, 1, heads=1, concat=False, dropout=dropout)
+
     def forward(self, x, edge_index):
         x = F.elu(self.conv1(x, edge_index))
         x = F.elu(self.conv2(x, edge_index))
         x = F.elu(self.conv3(x, edge_index))
         return torch.sigmoid(self.out(x, edge_index)).squeeze(-1)
 
+
 class TrajectoryLSTM(nn.Module):
     def __init__(self, desc_dim=8, hidden_dim=256, num_layers=2,
                  T=T_STEPS, dropout=0.1):
         super().__init__()
-        self.hidden_dim = hidden_dim; self.num_layers = num_layers; self.T = T
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.T = T
         self.encoder = nn.Sequential(
             nn.Linear(desc_dim, 128), nn.ReLU(), nn.Dropout(dropout),
-            nn.Linear(128, 256),      nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(128, 256), nn.ReLU(), nn.Dropout(dropout),
             nn.Linear(256, num_layers * hidden_dim * 2))
         self.lstm = nn.LSTM(1, hidden_dim, num_layers, batch_first=True,
                             dropout=dropout if num_layers > 1 else 0.0)
         self.output_head = nn.Sequential(
             nn.Linear(hidden_dim, 64), nn.ReLU(), nn.Linear(64, 1), nn.Sigmoid())
+
     def forward(self, d):
         B   = d.shape[0]
         enc = self.encoder(d).view(B, self.num_layers, self.hidden_dim * 2)
-        h0  = enc[:,:,:self.hidden_dim].permute(1,0,2).contiguous()
-        c0  = enc[:,:,self.hidden_dim:].permute(1,0,2).contiguous()
-        inp = torch.full((B,1,1), 0.5, device=d.device)
-        preds = []; h, c = h0, c0
+        h0  = enc[:, :, :self.hidden_dim].permute(1, 0, 2).contiguous()
+        c0  = enc[:, :, self.hidden_dim:].permute(1, 0, 2).contiguous()
+        inp = torch.full((B, 1, 1), 0.5, device=d.device)
+        preds = []
+        h, c = h0, c0
         for _ in range(self.T):
-            out,(h,c) = self.lstm(inp,(h,c))
+            out, (h, c) = self.lstm(inp, (h, c))
             p = self.output_head(out.squeeze(1))
-            preds.append(p); inp = p.detach().unsqueeze(1)
+            preds.append(p)
+            inp = p.detach().unsqueeze(1)
         return torch.cat(preds, dim=1)
+
 
 class PALSTMModel(nn.Module):
     def __init__(self, desc_dim=11, hidden_dim=256, num_layers=2,
                  T=T_STEPS, dropout=0.1):
         super().__init__()
-        self.hidden_dim = hidden_dim; self.num_layers = num_layers; self.T = T
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.T = T
         self.encoder = nn.Sequential(
             nn.Linear(desc_dim, 128), nn.ReLU(), nn.Dropout(dropout),
-            nn.Linear(128, 256),      nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(128, 256), nn.ReLU(), nn.Dropout(dropout),
             nn.Linear(256, num_layers * hidden_dim * 2))
         self.lstm = nn.LSTM(1, hidden_dim, num_layers, batch_first=True,
                             dropout=dropout if num_layers > 1 else 0.0)
         self.output_head = nn.Sequential(
             nn.Linear(hidden_dim, 64), nn.ReLU(), nn.Linear(64, 1), nn.Sigmoid())
+
     def forward(self, d):
         B   = d.shape[0]
         enc = self.encoder(d).view(B, self.num_layers, self.hidden_dim * 2)
-        h0  = enc[:,:,:self.hidden_dim].permute(1,0,2).contiguous()
-        c0  = enc[:,:,self.hidden_dim:].permute(1,0,2).contiguous()
-        inp = torch.full((B,1,1), 0.5, device=d.device)
-        preds = []; h, c = h0, c0
+        h0  = enc[:, :, :self.hidden_dim].permute(1, 0, 2).contiguous()
+        c0  = enc[:, :, self.hidden_dim:].permute(1, 0, 2).contiguous()
+        inp = torch.full((B, 1, 1), 0.5, device=d.device)
+        preds = []
+        h, c = h0, c0
         for _ in range(self.T):
-            out,(h,c) = self.lstm(inp,(h,c))
+            out, (h, c) = self.lstm(inp, (h, c))
             p = self.output_head(out.squeeze(1))
-            preds.append(p); inp = p.detach().unsqueeze(1)
+            preds.append(p)
+            inp = p.detach().unsqueeze(1)
         return torch.cat(preds, dim=1)
+
 
 class ZealotTransformer(nn.Module):
     def __init__(self, node_feat_dim=NODE_FEAT_DIM, d_model=128, nhead=4,
                  num_transformer_layers=3, lstm_hidden=256, lstm_layers=2,
                  T=T_STEPS, dropout=0.0):
         super().__init__()
-        self.d_model = d_model; self.T = T
-        self.lstm_hidden = lstm_hidden; self.lstm_layers = lstm_layers
+        self.d_model = d_model
+        self.T = T
+        self.lstm_hidden = lstm_hidden
+        self.lstm_layers = lstm_layers
         self.node_encoder = nn.Sequential(
             nn.Linear(node_feat_dim, d_model), nn.LayerNorm(d_model), nn.GELU())
         enc_layer = nn.TransformerEncoderLayer(
-            d_model=d_model, nhead=nhead, dim_feedforward=d_model*4,
+            d_model=d_model, nhead=nhead, dim_feedforward=d_model * 4,
             dropout=dropout, batch_first=True, norm_first=True, activation="gelu")
         self.transformer = nn.TransformerEncoder(
             enc_layer, num_layers=num_transformer_layers,
             enable_nested_tensor=False)
         self.ctx_projector = nn.Sequential(
-            nn.Linear(2*d_model, lstm_hidden*2), nn.GELU(),
-            nn.Linear(lstm_hidden*2, lstm_layers*lstm_hidden*2))
+            nn.Linear(2 * d_model, lstm_hidden * 2), nn.GELU(),
+            nn.Linear(lstm_hidden * 2, lstm_layers * lstm_hidden * 2))
         self.lstm = nn.LSTM(1, lstm_hidden, lstm_layers, batch_first=True,
                             dropout=dropout if lstm_layers > 1 else 0.0)
         self.output_head = nn.Sequential(
             nn.Linear(lstm_hidden, 64), nn.GELU(), nn.Linear(64, 1), nn.Sigmoid())
+
     def encode_graph_batch(self, X, zm, pm):
-        H   = self.node_encoder(X)
-        H   = self.transformer(H, src_key_padding_mask=~pm)
+        H = self.node_encoder(X)
+        H = self.transformer(H, src_key_padding_mask=~pm)
         zmk = zm & pm
-        zp  = (H*zmk.unsqueeze(-1)).sum(1)/zmk.sum(1,keepdim=True).clamp(1)
+        zp = (H * zmk.unsqueeze(-1)).sum(1) / zmk.sum(1, keepdim=True).clamp(1)
         nzk = (~zm) & pm
-        np_ = (H*nzk.unsqueeze(-1)).sum(1)/nzk.sum(1,keepdim=True).clamp(1)
+        np_ = (H * nzk.unsqueeze(-1)).sum(1) / nzk.sum(1, keepdim=True).clamp(1)
         return torch.cat([zp, np_], dim=-1)
+
     def decode_batch(self, ctx):
-        B    = ctx.shape[0]
-        proj = self.ctx_projector(ctx).view(B,self.lstm_layers,self.lstm_hidden*2)
-        h0   = proj[:,:,:self.lstm_hidden].transpose(0,1).contiguous()
-        c0   = proj[:,:,self.lstm_hidden:].transpose(0,1).contiguous()
-        inp  = torch.full((B,1,1), 0.5, device=ctx.device)
-        preds, h, c = [], h0, c0
+        B = ctx.shape[0]
+        proj = self.ctx_projector(ctx).view(B, self.lstm_layers, self.lstm_hidden * 2)
+        h0 = proj[:, :, :self.lstm_hidden].transpose(0, 1).contiguous()
+        c0 = proj[:, :, self.lstm_hidden:].transpose(0, 1).contiguous()
+        inp = torch.full((B, 1, 1), 0.5, device=ctx.device)
+        preds = []
+        h, c = h0, c0
         for _ in range(self.T):
-            out,(h,c) = self.lstm(inp,(h,c))
-            p = self.output_head(out); preds.append(p); inp = p.detach()
+            out, (h, c) = self.lstm(inp, (h, c))
+            p = self.output_head(out)
+            preds.append(p)
+            inp = p.detach()
         return torch.cat(preds, dim=1).squeeze(-1)
+
     def forward(self, X, zm):
-        pm  = torch.ones(1, X.shape[0], dtype=torch.bool, device=X.device)
+        pm = torch.ones(1, X.shape[0], dtype=torch.bool, device=X.device)
         ctx = self.encode_graph_batch(X.unsqueeze(0), zm.unsqueeze(0), pm)
         return self.decode_batch(ctx).squeeze(0) * 2 - 1
 
@@ -434,53 +430,60 @@ class ZealotTransformer(nn.Module):
 # ═════════════════════════════════════════════════════════════
 
 def _clean(sd):
-    return {k.replace("_orig_mod.","").replace("module.",""): v
+    return {k.replace("_orig_mod.", "").replace("module.", ""): v
             for k, v in sd.items()}
+
 
 def load_models(args, device):
     loaded = {}
+
     def _try(key, path, strict=True, pair=False):
         if not (path and os.path.isfile(path)):
-            print(f"  - {key}: not found"); return
+            print(f"  - {key}: not found")
+            return
         try:
             ckpt = torch.load(path, map_location=device, weights_only=False)
-            hp   = ckpt.get("hyperparams", {})
-            if key == "SpecLow":
-                m = LocalGATModel(hidden_dim=hp.get("hidden_dim",256),
-                                  dropout=hp.get("dropout",0.1))
-            elif key == "GlobalGAT":
-                m = GlobalGATModel(hidden_dim=hp.get("hidden_dim",256))
-            elif key == "SpectralLSTM":
-                m = TrajectoryLSTM(desc_dim=hp.get("desc_dim",8),
-                                   hidden_dim=hp.get("hidden_dim",256),
-                                   num_layers=hp.get("num_layers",2),
-                                   T=hp.get("T",T_STEPS))
-            elif key == "PA-LSTM":
-                m = PALSTMModel(desc_dim=hp.get("desc_dim",11),
-                                hidden_dim=hp.get("hidden_dim",256),
-                                num_layers=hp.get("num_layers",2),
-                                T=hp.get("T",T_STEPS))
-            elif key == "ZealotTransformer":
+            hp = ckpt.get("hyperparams", {})
+            if key in ["SpecLow"]:
+                m = LocalGATModel(hidden_dim=hp.get("hidden_dim", 256),
+                                  dropout=hp.get("dropout", 0.1))
+            elif key in ["GlobalGAT"]:
+                m = GlobalGATModel(hidden_dim=hp.get("hidden_dim", 256))
+            elif key in ["SpectralLSTM"]:
+                m = TrajectoryLSTM(desc_dim=hp.get("desc_dim", 8),
+                                   hidden_dim=hp.get("hidden_dim", 256),
+                                   num_layers=hp.get("num_layers", 2),
+                                   T=hp.get("T", T_STEPS))
+            elif key in ["PA-LSTM"]:
+                m = PALSTMModel(desc_dim=hp.get("desc_dim", 11),
+                                hidden_dim=hp.get("hidden_dim", 256),
+                                num_layers=hp.get("num_layers", 2),
+                                T=hp.get("T", T_STEPS))
+            elif key in ["ZealotTransformer_Full", "ZealotTransformer_BAonly"]:
                 m = ZealotTransformer(
-                    node_feat_dim=hp.get("node_feat_dim",NODE_FEAT_DIM),
-                    d_model=hp.get("d_model",128),
-                    nhead=hp.get("nhead",4),
-                    num_transformer_layers=hp.get("num_transformer_layers",3),
-                    lstm_hidden=hp.get("lstm_hidden",256),
-                    lstm_layers=hp.get("lstm_layers",2),
-                    T=hp.get("T",T_STEPS))
+                    node_feat_dim=hp.get("node_feat_dim", NODE_FEAT_DIM),
+                    d_model=hp.get("d_model", 128),
+                    nhead=hp.get("nhead", 4),
+                    num_transformer_layers=hp.get("num_transformer_layers", 3),
+                    lstm_hidden=hp.get("lstm_hidden", 256),
+                    lstm_layers=hp.get("lstm_layers", 2),
+                    T=hp.get("T", T_STEPS))
+            else:
+                return
             m.load_state_dict(_clean(ckpt["model_state_dict"]), strict=strict)
             m = m.to(device).eval()
-            loaded[key] = (m, ckpt.get("norm_stats",None)) if pair else m
+            loaded[key] = (m, ckpt.get("norm_stats", None)) if pair else m
             print(f"  ✓ {key}: {path}")
         except Exception as e:
             print(f"  ✗ {key}: {e}")
 
-    _try("SpecLow",           args.spec_low_checkpoint,      strict=True)
-    _try("GlobalGAT",         args.global_gat_checkpoint,    strict=True)
-    _try("SpectralLSTM",      args.spectral_lstm_checkpoint, strict=False, pair=True)
-    _try("PA-LSTM",           args.pa_lstm_checkpoint,       strict=False, pair=True)
-    _try("ZealotTransformer", args.zt_checkpoint,            strict=True)
+    _try("SpecLow", args.spec_low_checkpoint, strict=True)
+    _try("GlobalGAT", args.global_gat_checkpoint, strict=True)
+    _try("SpectralLSTM", args.spectral_lstm_checkpoint, strict=False, pair=True)
+    _try("PA-LSTM", args.pa_lstm_checkpoint, strict=False, pair=True)
+    _try("ZealotTransformer_Full", args.full_zt_checkpoint, strict=True)
+    _try("ZealotTransformer_BAonly", args.ba_only_zt_checkpoint, strict=True)
+
     return loaded
 
 
@@ -491,10 +494,13 @@ def load_models(args, device):
 def predict_persistence(m0):
     return np.full(T_STEPS, m0, dtype=np.float32)
 
+
 def predict_meanfield(rho, m0, alpha=0.08, beta=2.5):
-    def ode(m, t): return -alpha*m + beta*rho*(1-m)
-    sol = odeint(ode, [m0], np.linspace(0, T_STEPS-1, T_STEPS))
+    def ode(m, t):
+        return -alpha * m + beta * rho * (1 - m)
+    sol = odeint(ode, [m0], np.linspace(0, T_STEPS - 1, T_STEPS))
     return np.clip(sol.squeeze(), -1, 1).astype(np.float32)
+
 
 def _rebuild_graph(rec):
     G = nx.Graph()
@@ -502,76 +508,85 @@ def _rebuild_graph(rec):
     G.add_edges_from(rec["edges"])
     return G
 
+
 def _edge_index_from_rec(rec, device):
     edges = rec["edges"]
     src = torch.tensor([e[0] for e in edges], dtype=torch.long)
     dst = torch.tensor([e[1] for e in edges], dtype=torch.long)
-    return torch.stack([torch.cat([src,dst]), torch.cat([dst,src])], dim=0).to(device)
+    return torch.stack([torch.cat([src, dst]), torch.cat([dst, src])], dim=0).to(device)
+
 
 @torch.no_grad()
 def infer_gat(model, rec, device):
-    N_g  = rec["N_g"]
-    deg  = np.array(rec["degrees"], dtype=np.float32)
-    dn   = deg / (deg.max() + 1e-8)
-    z_i  = np.zeros(N_g, dtype=np.float32)
-    for nd in rec["zealot_list"]: z_i[nd] = 1.0
-    ops  = np.random.choice([-1.,1.], size=N_g).astype(np.float32)
-    ops[z_i==1] = 1.
-    s_n  = (ops+1)/2.
-    x    = torch.tensor(np.stack([s_n,z_i,dn], axis=1),
-                        dtype=torch.float32).to(device)
-    ei   = _edge_index_from_rec(rec, device)
-    zm   = torch.tensor(z_i, dtype=torch.float32).to(device)
+    N_g = rec["N_g"]
+    deg = np.array(rec["degrees"], dtype=np.float32)
+    dn = deg / (deg.max() + 1e-8)
+    z_i = np.zeros(N_g, dtype=np.float32)
+    for nd in rec["zealot_list"]:
+        z_i[nd] = 1.0
+    ops = np.random.choice([-1., 1.], size=N_g).astype(np.float32)
+    ops[z_i == 1] = 1.
+    s_n = (ops + 1) / 2.
+    x = torch.tensor(np.stack([s_n, z_i, dn], axis=1),
+                     dtype=torch.float32).to(device)
+    ei = _edge_index_from_rec(rec, device)
+    zm = torch.tensor(z_i, dtype=torch.float32).to(device)
     preds = []
     for _ in range(T_STEPS):
         probs = model(x, ei)
-        samp  = torch.bernoulli(probs)
-        spin  = samp*2-1; spin[zm==1] = 1.
+        samp = torch.bernoulli(probs)
+        spin = samp * 2 - 1
+        spin[zm == 1] = 1.
         preds.append(spin.mean().item())
-        ns = samp.clone(); ns[zm==1] = 1.
-        x  = torch.stack([ns, x[:,1], x[:,2]], dim=1)
+        ns = samp.clone()
+        ns[zm == 1] = 1.
+        x = torch.stack([ns, x[:, 1], x[:, 2]], dim=1)
     return np.array(preds, dtype=np.float32)
+
 
 @torch.no_grad()
 def infer_spectral_lstm(model_ns, rec, device):
     model, ns = model_ns
-    G    = _rebuild_graph(rec)
+    G = _rebuild_graph(rec)
     desc = compute_spectral_8d(G, rec["Z"], rec["n"], rec["topo"])
-    desc = normalize_desc(desc[np.newaxis,:], ns)
+    desc = normalize_desc(desc[np.newaxis, :], ns)
     pred = model(torch.tensor(desc, dtype=torch.float32).to(device))
-    return (pred.squeeze(0).cpu().numpy()*2-1).astype(np.float32)
+    return (pred.squeeze(0).cpu().numpy() * 2 - 1).astype(np.float32)
+
 
 @torch.no_grad()
 def infer_pa_lstm(model_ns, rec, device):
     model, ns = model_ns
-    G  = _rebuild_graph(rec)
+    G = _rebuild_graph(rec)
     zs = set(rec["zealot_list"])
     desc = compute_pa_11d(G, rec["Z"], rec["n"], rec["topo"], zs)
-    desc = normalize_desc(desc[np.newaxis,:], ns)
+    desc = normalize_desc(desc[np.newaxis, :], ns)
     pred = model(torch.tensor(desc, dtype=torch.float32).to(device))
-    return (pred.squeeze(0).cpu().numpy()*2-1).astype(np.float32)
+    return (pred.squeeze(0).cpu().numpy() * 2 - 1).astype(np.float32)
+
 
 @torch.no_grad()
 def infer_zt(model, rec, device):
-    G  = _rebuild_graph(rec)
+    G = _rebuild_graph(rec)
     zs = set(rec["zealot_list"])
-    X  = compute_node_features_5d(G, zs)
+    X = compute_node_features_5d(G, zs)
     zm = np.zeros(rec["N_g"], dtype=bool)
-    for nd in zs: zm[nd] = True
+    for nd in zs:
+        zm[nd] = True
     pred = model(
-        torch.tensor(X,  dtype=torch.float32).to(device),
+        torch.tensor(X, dtype=torch.float32).to(device),
         torch.tensor(zm, dtype=torch.bool).to(device))
     return pred.cpu().numpy().astype(np.float32)
 
 
 # ═════════════════════════════════════════════════════════════
-# Cell evaluation — sequential graph building, parallel MC within
+# Cell evaluation
 # ═════════════════════════════════════════════════════════════
 
 def evaluate_cell(topo, placement, Z, n, loaded, device,
                   seed_base, workers, mc_runs):
     all_preds = {m: [] for m in MODEL_NAMES}
-    gt_list   = []
+    gt_list = []
 
     for g_idx in range(VAL_GRAPHS):
         print(f"      graph {g_idx+1}/{VAL_GRAPHS}...", end="", flush=True)
@@ -582,28 +597,67 @@ def evaluate_cell(topo, placement, Z, n, loaded, device,
             print(" skip")
             continue
 
-        gt  = np.array(rec["gt"])
-        m0  = rec["m0"]
+        gt = np.array(rec["gt"])
+        m0 = rec["m0"]
         rho = rec["rho"]
         gt_list.append(gt)
 
         all_preds["Persistence"].append(predict_persistence(m0))
         all_preds["MeanField"].append(predict_meanfield(rho, m0))
 
-        for key, infer_fn in [
-            ("SpecLow",           infer_gat),
-            ("GlobalGAT",         infer_gat),
-            ("SpectralLSTM",      infer_spectral_lstm),
-            ("PA-LSTM",           infer_pa_lstm),
-            ("ZealotTransformer", infer_zt),
-        ]:
-            if key in loaded:
-                try:
-                    p = infer_fn(loaded[key], rec, device)
-                    all_preds[key].append(p)
-                except Exception as e:
-                    print(f"\n    [{key}] error: {e}")
-                    all_preds[key].append(predict_persistence(m0))
+        # SpecLow
+        if "SpecLow" in loaded:
+            try:
+                p = infer_gat(loaded["SpecLow"], rec, device)
+                all_preds["SpecLow"].append(p)
+            except Exception as e:
+                print(f"\n    [SpecLow] error: {e}")
+                all_preds["SpecLow"].append(predict_persistence(m0))
+
+        # GlobalGAT
+        if "GlobalGAT" in loaded:
+            try:
+                p = infer_gat(loaded["GlobalGAT"], rec, device)
+                all_preds["GlobalGAT"].append(p)
+            except Exception as e:
+                print(f"\n    [GlobalGAT] error: {e}")
+                all_preds["GlobalGAT"].append(predict_persistence(m0))
+
+        # SpectralLSTM
+        if "SpectralLSTM" in loaded:
+            try:
+                p = infer_spectral_lstm(loaded["SpectralLSTM"], rec, device)
+                all_preds["SpectralLSTM"].append(p)
+            except Exception as e:
+                print(f"\n    [SpectralLSTM] error: {e}")
+                all_preds["SpectralLSTM"].append(predict_persistence(m0))
+
+        # PA-LSTM
+        if "PA-LSTM" in loaded:
+            try:
+                p = infer_pa_lstm(loaded["PA-LSTM"], rec, device)
+                all_preds["PA-LSTM"].append(p)
+            except Exception as e:
+                print(f"\n    [PA-LSTM] error: {e}")
+                all_preds["PA-LSTM"].append(predict_persistence(m0))
+
+        # ZealotTransformer Full
+        if "ZealotTransformer_Full" in loaded:
+            try:
+                p = infer_zt(loaded["ZealotTransformer_Full"], rec, device)
+                all_preds["ZealotTransformer_Full"].append(p)
+            except Exception as e:
+                print(f"\n    [ZealotTransformer_Full] error: {e}")
+                all_preds["ZealotTransformer_Full"].append(predict_persistence(m0))
+
+        # ZealotTransformer BA-only
+        if "ZealotTransformer_BAonly" in loaded:
+            try:
+                p = infer_zt(loaded["ZealotTransformer_BAonly"], rec, device)
+                all_preds["ZealotTransformer_BAonly"].append(p)
+            except Exception as e:
+                print(f"\n    [ZealotTransformer_BAonly] error: {e}")
+                all_preds["ZealotTransformer_BAonly"].append(predict_persistence(m0))
 
         print(f" {time.time()-t_g:.1f}s")
 
@@ -616,7 +670,7 @@ def evaluate_cell(topo, placement, Z, n, loaded, device,
         if not preds:
             results[mname] = (float("nan"), float("nan"))
             continue
-        per = [float(np.sqrt(np.mean((np.array(p)-np.array(g))**2)))
+        per = [float(np.sqrt(np.mean((np.array(p) - np.array(g)) ** 2)))
                for p, g in zip(preds, gt_list)]
         results[mname] = (float(np.mean(per)), float(np.std(per)))
     return results
@@ -627,24 +681,26 @@ def evaluate_cell(topo, placement, Z, n, loaded, device,
 # ═════════════════════════════════════════════════════════════
 
 def _f(mean, std):
-    if mean is None or np.isnan(float(mean)): return "   N/A      "
+    if mean is None or np.isnan(float(mean)):
+        return "   N/A      "
     return f"{mean:.3f} ± {std:.3f}"
+
 
 def write_table(title, meta_lines, col_models, row_keys, row_label_fn,
                 results, out_path):
-    col_w = 16
-    hdr   = f"{'':40}" + "".join(f"{m:>{col_w}}" for m in col_models)
-    sep   = "-" * len(hdr)
-    rows  = []
+    col_w = 18
+    hdr = f"{'':40}" + "".join(f"{m:>{col_w}}" for m in col_models)
+    sep = "-" * len(hdr)
+    rows = []
     for key in row_keys:
         label = row_label_fn(key)
-        cell  = results.get(key, {})
-        row   = f"{label:<40}"
+        cell = results.get(key, {})
+        row = f"{label:<40}"
         for m in col_models:
             ms = cell.get(m, (float("nan"), float("nan")))
             row += f"{_f(*ms):>{col_w}}"
         rows.append(row)
-    lines = ["="*len(sep), title, "="*len(sep)]
+    lines = ["=" * len(sep), title, "=" * len(sep)]
     lines += meta_lines
     lines += [sep, hdr, sep]
     lines += rows
@@ -660,19 +716,16 @@ def write_table(title, meta_lines, col_models, row_keys, row_label_fn,
 # ═════════════════════════════════════════════════════════════
 
 def build_plan():
-    cells = set()
-    # Suppl C: OOD large N, all topos, bridge+random, OOD Z
-    for topo in TRAINED_TOPOS + OOD_TOPOS:
-        for pl in ["bridge", "random"]:
-            for Z in OOD_Z:
-                for n in OOD_SIZES:
-                    cells.add((pl, topo, Z, n))
-    # Suppl D: RGG, all placements, trained+OOD Z, N∈{1024,4096}
-    for pl in PLACEMENTS:
-        for Z in TRAINED_Z + OOD_Z:
-            for n in [1024, 4096]:
-                cells.add((pl, "rgg", Z, n))
-    return sorted(cells)
+    cells = []
+    # Large BA: N∈{4096,8192}, Z∈{64,128}, hub placement
+    for Z in BA_LARGE_Z:
+        for n in BA_LARGE_SIZES:
+            cells.append(("hub", "ba", Z, n))
+    # RGG: N=1024, Z∈{2,32}, hub placement
+    for Z in RGG_Z:
+        for n in RGG_SIZES:
+            cells.append(("hub", "rgg", Z, n))
+    return cells
 
 
 # ═════════════════════════════════════════════════════════════
@@ -681,24 +734,26 @@ def build_plan():
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--zt_checkpoint",              type=str, default=None)
-    p.add_argument("--spectral_lstm_checkpoint",   type=str, default=None)
-    p.add_argument("--pa_lstm_checkpoint",         type=str, default=None)
-    p.add_argument("--spec_low_checkpoint",        type=str, default=None)
-    p.add_argument("--global_gat_checkpoint",      type=str, default=None)
-    p.add_argument("--out_dir",    type=str,   default="result_large")
-    p.add_argument("--seed",       type=int,   default=42)
-    p.add_argument("--mc_runs",    type=int,   default=MC_RUNS,
-                   help=f"MC runs per graph (default {MC_RUNS}, reduced for large N)")
-    p.add_argument("--val_graphs", type=int,   default=VAL_GRAPHS)
-    p.add_argument("--workers",    type=int,   default=max(1, cpu_count()-2),
-                   help="Workers for parallel MC runs within each graph")
+    p.add_argument("--full_zt_checkpoint", type=str, required=True,
+                   help="Full ZealotTransformer (BA/ER/WS, multi-size)")
+    p.add_argument("--ba_only_zt_checkpoint", type=str, required=True,
+                   help="BA-only ZealotTransformer (N=1024 only)")
+    p.add_argument("--spectral_lstm_checkpoint", type=str, default=None)
+    p.add_argument("--pa_lstm_checkpoint", type=str, default=None)
+    p.add_argument("--spec_low_checkpoint", type=str, default=None)
+    p.add_argument("--global_gat_checkpoint", type=str, default=None)
+    p.add_argument("--out_dir", type=str, default="result_ood")
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--mc_runs", type=int, default=MC_RUNS)
+    p.add_argument("--val_graphs", type=int, default=VAL_GRAPHS)
+    p.add_argument("--workers", type=int, default=max(1, cpu_count() - 2))
     return p.parse_args()
+
 
 def main():
     args = parse_args()
     global MC_RUNS, VAL_GRAPHS
-    MC_RUNS    = args.mc_runs
+    MC_RUNS = args.mc_runs
     VAL_GRAPHS = args.val_graphs
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -707,10 +762,9 @@ def main():
         print(f"  GPU  : {torch.cuda.get_device_properties(0).name}")
     print(f"Workers: {args.workers}  MC runs: {MC_RUNS}  "
           f"Val graphs: {VAL_GRAPHS}")
-    print(f"NOTE: MC runs parallelized WITHIN each graph "
-          f"(split across {args.workers} workers)")
 
-    np.random.seed(args.seed); torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
 
     tbl_dir = os.path.join(args.out_dir, "tables")
     os.makedirs(tbl_dir, exist_ok=True)
@@ -718,18 +772,20 @@ def main():
     print("\nLoading models...")
     loaded = load_models(args, device)
 
-    plan  = build_plan()
+    plan = build_plan()
     total = len(plan)
-    print(f"\nPlan: {total} cells  (N ≥ 1024 for RGG, N ∈ {{4096,8192}} for OOD)\n")
+    print(f"\nPlan: {total} cells")
+    print(f"  BA Large: N∈{BA_LARGE_SIZES}, Z∈{BA_LARGE_Z} → {len(BA_LARGE_SIZES) * len(BA_LARGE_Z)} cells")
+    print(f"  RGG: N={RGG_SIZES}, Z∈{RGG_Z} → {len(RGG_SIZES) * len(RGG_Z)} cells\n")
 
-    results    = {}
+    results = {}
     raw_export = {}
     t0 = time.time()
 
     for i, (pl, topo, Z, n) in enumerate(plan, 1):
         print(f"\n  [{i:3d}/{total}]  pl={pl:8} topo={topo:5} Z={Z:4} N={n}",
               flush=True)
-        t1  = time.time()
+        t1 = time.time()
         res = evaluate_cell(topo, pl, Z, n, loaded, device,
                             args.seed, args.workers, MC_RUNS)
         results[(pl, topo, Z, n)] = res
@@ -738,50 +794,41 @@ def main():
         print(f"  → best_RMSE={best:.4f}  total={time.time()-t1:.1f}s",
               flush=True)
         for mname, (m, s) in res.items():
-            raw_export[f"{pl}_{topo}_Z{Z}_N{n}_{mname}"] = {
-                "mean_rmse": m, "std_rmse": s}
+            key = f"{pl}_{topo}_Z{Z}_N{n}_{mname}"
+            raw_export[key] = {"mean_rmse": m, "std_rmse": s}
 
     print(f"\nAll done in {(time.time()-t0)/60:.1f} min")
     print("\nWriting tables...")
 
-    meta = [f"MC runs: {MC_RUNS} (reduced for large N)   Val graphs: {VAL_GRAPHS}"]
+    meta = [f"MC runs: {MC_RUNS}   Val graphs: {VAL_GRAPHS}"]
 
-    # Suppl C: OOD large N
+    # Table 1: RGG comparison
     write_table(
-        "SUPPLEMENT C: OOD Large N (4096, 8192) — OOD Z (64, 128)",
-        meta + ["All (N, Z) combinations outside training distribution"],
+        "SUPPLEMENT: RGG Topology — Hub Placement (Unseen During Training)",
+        meta + ["RGG never seen during training. Comparing Full ZT vs BA-only ZT."],
         MODEL_NAMES,
-        [(topo, pl, Z, n)
-         for topo in TRAINED_TOPOS + OOD_TOPOS
-         for pl in ["bridge","random"]
-         for Z in OOD_Z for n in OOD_SIZES],
-        lambda k: f"{TOPO_LABELS.get(k[0],k[0])} {k[1]:8} Z={k[2]:4} N={k[3]}",
-        {(topo,pl,Z,n): results.get((pl,topo,Z,n),{})
-         for topo in TRAINED_TOPOS+OOD_TOPOS
-         for pl in ["bridge","random"]
-         for Z in OOD_Z for n in OOD_SIZES},
-        os.path.join(tbl_dir, "suppl_ood_large_n.txt"))
+        [(Z, 1024) for Z in RGG_Z],
+        lambda k: f"RGG  Hub  Z={k[0]:4}  N={k[1]}",
+        {(Z, 1024): results.get(("hub", "rgg", Z, 1024), {}) for Z in RGG_Z},
+        os.path.join(tbl_dir, "suppl_rgg_comparison.txt"))
 
-    # Suppl D: RGG
+    # Table 2: BA Large N comparison
     write_table(
-        "SUPPLEMENT D: RGG Topology (fully OOD) — All Placements",
-        meta + ["RGG never seen during training"],
+        "SUPPLEMENT: BA Large Networks — Hub Placement (Unseen Sizes)",
+        meta + [f"N∈{BA_LARGE_SIZES}, Z∈{BA_LARGE_Z} outside training distribution"],
         MODEL_NAMES,
-        [(pl, Z, n)
-         for pl in PLACEMENTS
-         for Z in TRAINED_Z + OOD_Z
-         for n in [1024, 4096]],
-        lambda k: f"{k[0]:8} Z={k[1]:4} N={k[2]}",
-        {(pl,Z,n): results.get((pl,"rgg",Z,n),{})
-         for pl in PLACEMENTS
-         for Z in TRAINED_Z+OOD_Z for n in [1024,4096]},
-        os.path.join(tbl_dir, "suppl_ood_rgg.txt"))
+        [(Z, n) for Z in BA_LARGE_Z for n in BA_LARGE_SIZES],
+        lambda k: f"BA   Hub  Z={k[0]:4}  N={k[1]}",
+        {(Z, n): results.get(("hub", "ba", Z, n), {})
+         for Z in BA_LARGE_Z for n in BA_LARGE_SIZES},
+        os.path.join(tbl_dir, "suppl_ba_large_comparison.txt"))
 
-    json_path = os.path.join(args.out_dir, "results_large_raw.json")
+    json_path = os.path.join(args.out_dir, "results_ood.json")
     with open(json_path, "w") as f:
         json.dump(raw_export, f, indent=2)
     print(f"\n  Raw JSON: {json_path}")
     print(f"\nDone. Tables in {tbl_dir}/")
+
 
 if __name__ == "__main__":
     main()

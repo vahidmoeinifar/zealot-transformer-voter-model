@@ -64,13 +64,20 @@ cd "${WORK_DIR}"
 # -----------------------------------------------------------------------------
 SAVED="${WORK_DIR}/saved_models"
 
-ZT_CKPT="${SAVED}/zealot_transformer.pt"
-SPECTRAL_LSTM_CKPT="${SAVED}/SpectralLSTM.pt"
-PA_LSTM_CKPT="${SAVED}/pa-lstm.pt"
-SPEC_LOW_CKPT="${SAVED}/specialist_low_z2.pt"
-GLOBAL_GAT_CKPT="${SAVED}/Global-GAT.pt"
+#ZT_CKPT="${SAVED}/zealot_transformer.pt"
+#SPECTRAL_LSTM_CKPT="${SAVED}/SpectralLSTM.pt"
+#PA_LSTM_CKPT="${SAVED}/pa-lstm.pt"
+#SPEC_LOW_CKPT="${SAVED}/specialist_low_z2.pt"
+#GLOBAL_GAT_CKPT="${SAVED}/Global-GAT.pt"
 
-OUT_DIR="${WORK_DIR}/result"
+ZT_CKPT="${SAVED}/zealot_transformer_1024_BA.pt"
+SPECTRAL_LSTM_CKPT=""
+PA_LSTM_CKPT=""
+SPEC_LOW_CKPT=""
+GLOBAL_GAT_CKPT=""
+
+
+OUT_DIR="${WORK_DIR}/result/1024-ba"
 mkdir -p "${OUT_DIR}"
 
 # -----------------------------------------------------------------------------

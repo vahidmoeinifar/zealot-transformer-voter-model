@@ -42,12 +42,12 @@ warnings.filterwarnings("ignore")
 # ─────────────────────────────────────────────────────────────
 T_STEPS       = 50
 NODE_FEAT_DIM = 5
-MC_RUNS       = 32
+MC_RUNS       = 128
 VAL_GRAPHS    = 10
 
 # Trimmed: only BA for large N, only hub placement
-OOD_SIZES      = [4096, 8192]
-OOD_Z          = [64, 128]
+OOD_SIZES      = []
+OOD_Z          = []
 
 # Trimmed: RGG only N=1024, Z∈{2,32}, hub only
 RGG_SIZES      = [1024]
