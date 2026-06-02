@@ -3,31 +3,6 @@ attention_analysis.py
 =====================
 Extracts and analyses the self-attention patterns of ZealotTransformer's
 Transformer encoder across BA network densities.
-
-What it measures
-----------------
-  For each graph instance the script:
-    1. Runs a forward pass with attention-weight hooks registered on every
-       TransformerEncoderLayer.
-    2. Averages attention weights across heads → per-node "received attention"
-       (how much other nodes attend to node i).
-    3. Correlates received attention with:
-         - Node degree
-         - Betweenness centrality
-    4. Aggregates Pearson r and Spearman ρ across graphs.
-
-This directly replicates the bridge-to-hub transition analysis from the
-SpectralLSTM paper, now applied to ZealotTransformer.
-
-Outputs
--------
-  attention_vs_degree.pdf / .png    heatmap + scatter: attention vs degree
-  attention_correlations.pdf / .png Pearson/Spearman vs m (density) per layer
-  attention_analysis.json           raw correlation numbers
-
-Usage
------
-  python attention_analysis.py --zt_checkpoint saved_models/zealot_transformer.pt
 """
 
 import os, json, argparse, warnings

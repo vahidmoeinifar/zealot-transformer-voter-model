@@ -3,9 +3,6 @@
 #  LUMI Supercomputer — SLURM Batch Script (GPU / ROCm)
 #  Job: Universal Magnetization Trajectory Predictor — LSTM (Single GCD)
 #  Author: Vahid Moeinifar (AGH University of Science and Technology)
-#
-#  Pure PyTorch LSTM — no PyG, no DDP, no mp.spawn.
-#  All 56 CPUs used for dataset build (spectral gap + simulation).
 # =============================================================================
 
 #SBATCH --job-name=graph_transformer_trainer

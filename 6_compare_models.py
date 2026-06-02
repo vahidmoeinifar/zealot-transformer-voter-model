@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
 """
 compare_models.py — LUMI version
-=================================
-Compares all neural models + baselines. Outputs 3 LaTeX tables + figures.
-
-Tables:
-  table1_cross_topology.tex    — BA/ER/WS × Z ∈ {2,8,16,32}, hub placement
-  table2_zealot_placement.tex  — BA, Hub / Bridge / Random × Z ∈ {2,8,16,32}
-  table3_size_generalization.tex — all topologies × N ∈ {256,512,1024,2048,4096}
-
-Usage on LUMI:
-  python compare_models.py \\
-      --zt_checkpoint          saved_models/zealot_transformer.pt \\
-      --spectral_lstm_checkpoint saved_models/universal_lstm.pt \\
-      --pa_lstm_checkpoint       saved_models/pa-lstm.pt \\
-      --spec_low_checkpoint      saved_models/specialist_low_z2.pt \\
-      --global_gat_checkpoint    saved_models/global_no_cond.pt \\
-      --eval_sizes
-
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """
 

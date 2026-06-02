@@ -1,11 +1,6 @@
 #!/bin/bash
 # =============================================================================
-#  LUMI Supercomputer — SLURM Batch Script (GPU / ROCm)
-#  Job: Specialist GAT — trains Specialist-Low (Z=2) then Specialist-High (Z=32)
 #  Author: Vahid Moeinifar (AGH University of Science and Technology)
-#
-#  Both specialists trained sequentially in one job.
-#  Reuses pyg-wrapper + pyg-packages from the FiLM/Global-GAT setup.
 # =============================================================================
 
 #SBATCH --job-name=specialist_gat

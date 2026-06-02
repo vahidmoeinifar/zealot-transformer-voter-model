@@ -1,17 +1,6 @@
 """
 ZealotTransformer — Enhanced Training with Multi-Metric Validation
-==================================================================
-Saves checkpoints every N epochs for manual convergence checking.
-Reports validation RMSE on:
-  - BA / hub placement (training distribution)
-  - BA / random placement
-  - ER / hub placement
-  - WS / hub placement
-
-This allows you to:
-  1. Stop training when RMSE stabilizes
-  2. Record the exact epoch you stopped
-  3. Track generalization during training
+Author: Vahid Moeinifar (AGH University of Science and Technology)
 """
 
 import os, random, argparse, time, json

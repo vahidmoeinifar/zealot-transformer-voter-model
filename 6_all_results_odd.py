@@ -3,25 +3,9 @@
 eval_ood_comparison.py — Evaluate Full ZT vs BA-only ZT on OOD configurations
 ================================================================================
 Evaluates:
-  • Supplement: RGG topology (unseen), N=1024, Z∈{2,32}, hub placement
-  • Supplement: BA large networks (unseen sizes), N∈{4096,8192}, Z∈{64,128}, hub placement
+  - Supplement: RGG topology (unseen), N=1024, Z∈{2,32}, hub placement
+  - Supplement: BA large networks (unseen sizes), N∈{4096,8192}, Z∈{64,128}, hub placement
 
-Compares:
-  - Full ZealotTransformer (trained on BA/ER/WS, multi-size, hub+random)
-  - BA-only ZealotTransformer (trained on BA only, N=1024 only, hub only)
-  - All baselines (SpectralLSTM, PA-LSTM, GlobalGAT, SpecLow, Persistence, MeanField)
-
-Usage:
-  python eval_ood_comparison.py \\
-      --full_zt_checkpoint       saved_models/zealot_transformer.pt \\
-      --ba_only_zt_checkpoint    saved_models/zealot_transformer_1024_BA.pt \\
-      --spectral_lstm_checkpoint saved_models/universal_lstm.pt \\
-      --pa_lstm_checkpoint       saved_models/pa-lstm.pt \\
-      --spec_low_checkpoint      saved_models/specialist_low.pt \\
-      --global_gat_checkpoint    saved_models/global_gat.pt \\
-      --out_dir result_ood \\
-      --mc_runs 128 \\
-      --workers 16
 """
 
 import os, sys, json, time, argparse, warnings

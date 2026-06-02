@@ -5,31 +5,6 @@ Extension of SpectralLSTM that adds zealot placement descriptors
 to the 8D graph descriptor, making it sensitive to *where* zealots
 sit in the network, not just how many there are.
 
-New descriptor (11D):
-  Original 8D:
-    1. rho_Z              — zealot density Z/N
-    2. lambda_2           — algebraic connectivity
-    3. mean_degree / N    — size-normalised mean degree
-    4. CV(degree)         — degree heterogeneity
-    5. global_clustering  — Watts-Strogatz C
-    6. topo_ba            — topology one-hot
-    7. topo_er            — topology one-hot
-    8. topo_ws            — topology one-hot
-
-  New placement features (+3D):
-    9.  mean_degree_zealots / mean_degree_all  — hub score
-                (>1 means zealots sit on hubs, ~1 means random)
-   10.  mean_betweenness_zealots / mean_betweenness_all  — bridge score
-   11.  zealot_fiedler_score  — |projection of zealot indicator onto
-                                 Fiedler vector| / Z
-                (captures how well zealots straddle the graph bottleneck)
-
-Training covers two placement strategies:
-  - Hub placement      (top-Z degree nodes, as before)
-  - Random placement   (uniformly random non-hub nodes)
-
-This forces the model to learn the placement → trajectory mapping
-rather than relying on implicit hub-placement assumption.
 
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """

@@ -6,20 +6,6 @@ Covers:
   • Supplement C: BA only, hub only, N∈{4096,8192}, OOD Z∈{64,128}
   • Supplement D: RGG only, hub only, N=1024, Z∈{2,32}
 
-MC runs: 32 (reduced — variance averages across VAL_GRAPHS=10 graphs)
-Parallelism: workers split MC runs WITHIN each graph (batched).
-
-Outputs in result_large/tables/:
-  suppl_ood_large_n.txt
-  suppl_ood_rgg.txt
-  results_large_raw.json
-
-Usage:
-  python eval_large_graphs.py \\
-      --zt_checkpoint            saved_models/zealot_transformer.pt \\
-      --spectral_lstm_checkpoint saved_models/universal_lstm.pt \\
-      --pa_lstm_checkpoint       saved_models/pa-lstm.pt \\
-      --workers 16
 
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """

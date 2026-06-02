@@ -1,27 +1,6 @@
 """
 Universal Magnetization Trajectory Predictor
 =============================================
-Idea A: Graph-level ODE emulator.
-
-Instead of predicting node states, predict the full magnetization
-trajectory m(0..T) directly from graph descriptors.
-
-Input (8D conditioning vector per graph):
-  1. rho_Z              — zealot density Z/N
-  2. lambda_2           — spectral gap (algebraic connectivity)
-  3. mean_degree / N    — normalised mean degree
-  4. CV(degree)         — degree heterogeneity (std/mean)
-  5. global_clustering  — Watts-Strogatz C
-  6. topo_ba            — topology one-hot: Barabasi-Albert
-  7. topo_er            — topology one-hot: Erdos-Renyi
-  8. topo_ws            — topology one-hot: Watts-Strogatz
-
-Output:
-  m(t) for t = 0..T  — full magnetization trajectory
-
-Architecture: LSTM over time steps, conditioned on graph descriptors.
-Loss: RMSE on trajectory (regression, not classification).
-
 Trained on BA, ER, WS graphs × all Z in {2,8,16,32}.
 
 Author: Vahid Moeinifar (AGH University of Science and Technology)

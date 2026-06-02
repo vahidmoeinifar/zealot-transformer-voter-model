@@ -3,31 +3,12 @@
 eval_small_graphs.py — Evaluation for N ≤ 2048 (trained distribution)
 =======================================================================
 Covers:
-  • Table 1: BA/ER/WS × Z∈{2,8,16,32}, hub placement, N=1024
-  • Table 2: BA, Hub/Random/Bridge × Z∈{2,8,16,32}, N=1024
-  • Table 3: Size generalization N∈{256,512,1024,2048}, hub, Z=8
-  • Supplement A: Full Z grid, all topologies, hub, N=1024
-  • Supplement B: All placements × all topologies, Z∈{8,32}, N=1024
+  - Table 1: BA/ER/WS × Z∈{2,8,16,32}, hub placement, N=1024
+  - Table 2: BA, Hub/Random/Bridge × Z∈{2,8,16,32}, N=1024
+  - Table 3: Size generalization N∈{256,512,1024,2048}, hub, Z=8
+  - Supplement A: Full Z grid, all topologies, hub, N=1024
+  - Supplement B: All placements × all topologies, Z∈{8,32}, N=1024
 
-MC runs: 128 (full precision — these are the main paper tables)
-Parallelism: workers across graphs AND across MC-run batches within each graph
-
-Outputs in result_small/tables/:
-  table1_cross_topology.txt
-  table2_placement.txt
-  table3_size_generalization.txt
-  suppl_cross_topo_all_z.txt
-  suppl_placement_all_topos.txt
-  results_small_raw.json
-
-Usage:
-  python eval_small_graphs.py \\
-      --zt_checkpoint            saved_models/zealot_transformer.pt \\
-      --spectral_lstm_checkpoint saved_models/universal_lstm.pt \\
-      --pa_lstm_checkpoint       saved_models/pa-lstm.pt \\
-      --spec_low_checkpoint      saved_models/specialist_low_z2.pt \\
-      --global_gat_checkpoint    saved_models/global_no_cond.pt \\
-      --workers 16
 
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """

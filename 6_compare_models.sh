@@ -60,17 +60,16 @@ cd "${WORK_DIR}"
 
 # -----------------------------------------------------------------------------
 # 3. Model checkpoint paths
-#    Set to "" to skip a model — the compare script handles missing files.
 # -----------------------------------------------------------------------------
 SAVED="${WORK_DIR}/saved_models"
 
 ZT_CKPT="${SAVED}/zealot_transformer.pt"
 SPEC_LOW_CKPT="${SAVED}/specialist_low_z2.pt"
-SPEC_HIGH_CKPT=""                                  # not used — set path or leave empty
+SPEC_HIGH_CKPT=""                                  # not used
 GLOBAL_GAT_CKPT="${SAVED}/Global-GAT.pt"
 SPECTRAL_LSTM_CKPT="${SAVED}/SpectralLSTM.pt"
 PA_LSTM_CKPT="${SAVED}/pa-lstm.pt"
-MLP_DESC_CKPT=""                                   # not used — set path or leave empty
+MLP_DESC_CKPT=""                                   # not used 
 
 # -----------------------------------------------------------------------------
 # 4. Sanity check
@@ -106,7 +105,6 @@ for CKPT in \
     fi
 done
 
-# Abort if ZealotTransformer checkpoint is missing
 if [ ! -f "${ZT_CKPT}" ]; then
     echo ""
     echo "ERROR: ZealotTransformer checkpoint not found at ${ZT_CKPT}"
@@ -136,7 +134,6 @@ argv = [
     '--eval_sizes',
 ]
 
-# Only add optional flags when the path is non-empty AND the file exists
 optional_flags = [
     ('--spec_low_checkpoint',      '${SPEC_LOW_CKPT}'),
     ('--spec_high_checkpoint',     '${SPEC_HIGH_CKPT}'),

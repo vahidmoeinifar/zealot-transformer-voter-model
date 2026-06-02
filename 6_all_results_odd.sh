@@ -1,8 +1,6 @@
 #!/bin/bash
 # =============================================================================
 #  LUMI Supercomputer — SLURM Batch: Full ZT vs BA-only ZT Comparison
-#  Script: 6_all_results_odd.py
-#  Tables: RGG (N=1024, Z=2,32), BA Large (N=4096,8192, Z=64,128)
 #  MC runs: 128
 # =============================================================================
 #SBATCH --job-name=eval_ood

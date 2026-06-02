@@ -1,10 +1,6 @@
 #!/bin/bash
 # =============================================================================
 #  LUMI Supercomputer — SLURM Batch: LARGE NETWORKS (N ≥ 4096)
-#  Script: eval_large_graphs.py
-#  Tables: Suppl C (OOD N=4096,8192), Suppl D (RGG N=1024,4096)
-#  MC runs: 32 (reduced — variance averages across 10 graphs)
-#  ⚠ Parallel MC within each graph — large N graphs split across workers
 # =============================================================================
 #SBATCH --job-name=eval_large
 #SBATCH --account=project_465002989
