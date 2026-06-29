@@ -19,8 +19,8 @@ The voter-model experiments were run on the **LUMI** supercomputer (AMD MI250X G
 
 ```
 .
-├── 1-Kaggle/                     # SIS & Deffuant experiments (NVIDIA T4, Kaggle)
-│   ├── scripts/                  # Kaggle notebooks / Python scripts
+├── 1-Kaggle/                     # SIS & Deffuant experiments (NVIDIA T4, Kaggle) 
+│   ├── scripts files             # Kaggle notebooks / Python scripts
 │   ├── datasets and models/      # Generated trajectory datasets + trained ZT weights
 │   └── results/                  # Output tables (xlsx / txt) for SIS & Deffuant
 │
@@ -29,8 +29,6 @@ The voter-model experiments were run on the **LUMI** supercomputer (AMD MI250X G
     ├── result/                   # Output tables for the voter model
     └── saved model/              # Trained voter-model weights
 ```
-
-> Folder names are kept as used during the actual runs. The two top-level folders separate the two compute environments (Kaggle vs LUMI) so each set of scripts, data, and results stays self-contained.
 
 ---
 
