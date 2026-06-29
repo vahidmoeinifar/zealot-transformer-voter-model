@@ -1,0 +1,2522 @@
+{
+  "bridge_ba_Z2_N1024_Persistence": {
+    "mean_rmse": 0.3782899339701221,
+    "std_rmse": 0.019808739686245042
+  },
+  "bridge_ba_Z2_N1024_MeanField": {
+    "mean_rmse": 0.33433466366687564,
+    "std_rmse": 0.020045757430909576
+  },
+  "bridge_ba_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.3961729851018923,
+    "std_rmse": 0.18926104078127354
+  },
+  "bridge_ba_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.1556721514285847,
+    "std_rmse": 0.0818086569367301
+  },
+  "bridge_ba_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.2692998928372864,
+    "std_rmse": 0.02332167499943041
+  },
+  "bridge_ba_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.2666146547280629,
+    "std_rmse": 0.029735767642561604
+  },
+  "bridge_ba_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.024276149941094356,
+    "std_rmse": 0.0046808438149883586
+  },
+  "bridge_ba_Z8_N256_Persistence": {
+    "mean_rmse": 0.8245774341414517,
+    "std_rmse": 0.011552153366716802
+  },
+  "bridge_ba_Z8_N256_MeanField": {
+    "mean_rmse": 0.4149293400544735,
+    "std_rmse": 0.011224720435654733
+  },
+  "bridge_ba_Z8_N256_SpecLow": {
+    "mean_rmse": 0.1104214123300136,
+    "std_rmse": 0.014765982822355393
+  },
+  "bridge_ba_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.06826577639380128,
+    "std_rmse": 0.02565957009328033
+  },
+  "bridge_ba_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.4841410909726256,
+    "std_rmse": 0.009245661868188973
+  },
+  "bridge_ba_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.8858808728108227,
+    "std_rmse": 0.012160012824847818
+  },
+  "bridge_ba_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.014970081732282222,
+    "std_rmse": 0.005894164395647722
+  },
+  "bridge_ba_Z8_N512_Persistence": {
+    "mean_rmse": 0.7830938456775847,
+    "std_rmse": 0.010250617987568454
+  },
+  "bridge_ba_Z8_N512_MeanField": {
+    "mean_rmse": 0.5148205311209568,
+    "std_rmse": 0.010209573474817183
+  },
+  "bridge_ba_Z8_N512_SpecLow": {
+    "mean_rmse": 0.09041796787069599,
+    "std_rmse": 0.01205144117144456
+  },
+  "bridge_ba_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.08813927908380878,
+    "std_rmse": 0.02647467245865309
+  },
+  "bridge_ba_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.44708771726835445,
+    "std_rmse": 0.008200484480081722
+  },
+  "bridge_ba_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.8246466008560691,
+    "std_rmse": 0.010535314541081137
+  },
+  "bridge_ba_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.015758262936115208,
+    "std_rmse": 0.002605061074858406
+  },
+  "bridge_ba_Z8_N1024_Persistence": {
+    "mean_rmse": 0.7127744329688832,
+    "std_rmse": 0.010138360378234285
+  },
+  "bridge_ba_Z8_N1024_MeanField": {
+    "mean_rmse": 0.5572391852642801,
+    "std_rmse": 0.009933379037178244
+  },
+  "bridge_ba_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.11796007065709853,
+    "std_rmse": 0.02841522697275499
+  },
+  "bridge_ba_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.10123944007767816,
+    "std_rmse": 0.04008779602169267
+  },
+  "bridge_ba_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.2415678650164514,
+    "std_rmse": 0.008710041820246957
+  },
+  "bridge_ba_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.480830123797299,
+    "std_rmse": 0.06427005217501817
+  },
+  "bridge_ba_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.009363012901136789,
+    "std_rmse": 0.0017893326517234229
+  },
+  "bridge_ba_Z8_N2048_Persistence": {
+    "mean_rmse": 0.6037642392205578,
+    "std_rmse": 0.01748366508305947
+  },
+  "bridge_ba_Z8_N2048_MeanField": {
+    "mean_rmse": 0.5184134733363637,
+    "std_rmse": 0.017410577718522745
+  },
+  "bridge_ba_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.14725449822291153,
+    "std_rmse": 0.028928458004925005
+  },
+  "bridge_ba_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.1451205198712616,
+    "std_rmse": 0.06068906565918775
+  },
+  "bridge_ba_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.24630842532610897,
+    "std_rmse": 0.012139363966740244
+  },
+  "bridge_ba_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.13144909072188107,
+    "std_rmse": 0.04941229602181098
+  },
+  "bridge_ba_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.02478866708022082,
+    "std_rmse": 0.010540117077168948
+  },
+  "bridge_ba_Z16_N1024_Persistence": {
+    "mean_rmse": 0.8123935849175636,
+    "std_rmse": 0.00628191658425751
+  },
+  "bridge_ba_Z16_N1024_MeanField": {
+    "mean_rmse": 0.5446852641791102,
+    "std_rmse": 0.0064817035176054985
+  },
+  "bridge_ba_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.08843980231265228,
+    "std_rmse": 0.008972636909852727
+  },
+  "bridge_ba_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.06166535725667831,
+    "std_rmse": 0.036070718249920274
+  },
+  "bridge_ba_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.17109111223306012,
+    "std_rmse": 0.006396440786038108
+  },
+  "bridge_ba_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.35331114942342917,
+    "std_rmse": 0.10675549655868412
+  },
+  "bridge_ba_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.008695363217217094,
+    "std_rmse": 0.0017220315243681242
+  },
+  "bridge_ba_Z32_N256_Persistence": {
+    "mean_rmse": 0.8303051607511003,
+    "std_rmse": 0.003074923997989891
+  },
+  "bridge_ba_Z32_N256_MeanField": {
+    "mean_rmse": 0.18758651686176137,
+    "std_rmse": 0.0015705282499986195
+  },
+  "bridge_ba_Z32_N256_SpecLow": {
+    "mean_rmse": 0.11113987473631534,
+    "std_rmse": 0.005738726346431586
+  },
+  "bridge_ba_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.049385324751889045,
+    "std_rmse": 0.009469530680933801
+  },
+  "bridge_ba_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.547370855030923,
+    "std_rmse": 0.0014618408827800715
+  },
+  "bridge_ba_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.9797097779603637,
+    "std_rmse": 0.0019618028001223003
+  },
+  "bridge_ba_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.010796946005037486,
+    "std_rmse": 0.0027884743524080034
+  },
+  "bridge_ba_Z32_N512_Persistence": {
+    "mean_rmse": 0.8656132746352002,
+    "std_rmse": 0.004396585104432719
+  },
+  "bridge_ba_Z32_N512_MeanField": {
+    "mean_rmse": 0.3101312661436494,
+    "std_rmse": 0.002211938485300734
+  },
+  "bridge_ba_Z32_N512_SpecLow": {
+    "mean_rmse": 0.10321336673676688,
+    "std_rmse": 0.0033162681601015026
+  },
+  "bridge_ba_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.04682863826670978,
+    "std_rmse": 0.009184974049558165
+  },
+  "bridge_ba_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.5216657918696901,
+    "std_rmse": 0.0018270031286350898
+  },
+  "bridge_ba_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.9555568750381156,
+    "std_rmse": 0.002518927647263708
+  },
+  "bridge_ba_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.010316390450652815,
+    "std_rmse": 0.0024120822780820442
+  },
+  "bridge_ba_Z32_N1024_Persistence": {
+    "mean_rmse": 0.8613903291841348,
+    "std_rmse": 0.003912780831290821
+  },
+  "bridge_ba_Z32_N1024_MeanField": {
+    "mean_rmse": 0.4478271027839297,
+    "std_rmse": 0.0020538360505979306
+  },
+  "bridge_ba_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.09857725112328847,
+    "std_rmse": 0.006376496978464048
+  },
+  "bridge_ba_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.034725533499961866,
+    "std_rmse": 0.01648101816128651
+  },
+  "bridge_ba_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.13138586386823967,
+    "std_rmse": 0.0023006844015630457
+  },
+  "bridge_ba_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.11948504522666584,
+    "std_rmse": 0.029330536808929514
+  },
+  "bridge_ba_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.008294646218100696,
+    "std_rmse": 0.002543387109533773
+  },
+  "bridge_ba_Z32_N2048_Persistence": {
+    "mean_rmse": 0.8330893346469551,
+    "std_rmse": 0.004444725375217689
+  },
+  "bridge_ba_Z32_N2048_MeanField": {
+    "mean_rmse": 0.5653033637495408,
+    "std_rmse": 0.005147389836899839
+  },
+  "bridge_ba_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.08596391720829719,
+    "std_rmse": 0.004058280646951588
+  },
+  "bridge_ba_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.04605166494320021,
+    "std_rmse": 0.012784157100165302
+  },
+  "bridge_ba_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.435520308018469,
+    "std_rmse": 0.0044777984100261665
+  },
+  "bridge_ba_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.060023787397830916,
+    "std_rmse": 0.021343974866879833
+  },
+  "bridge_ba_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.015520942337694027,
+    "std_rmse": 0.0046707482866873325
+  },
+  "bridge_er_Z2_N1024_Persistence": {
+    "mean_rmse": 0.09843442014295861,
+    "std_rmse": 0.013624931611601556
+  },
+  "bridge_er_Z2_N1024_MeanField": {
+    "mean_rmse": 0.05648354416797463,
+    "std_rmse": 0.013209659202750568
+  },
+  "bridge_er_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.712678205656934,
+    "std_rmse": 0.019311870609328603
+  },
+  "bridge_er_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.21513908789452013,
+    "std_rmse": 0.012676247938588098
+  },
+  "bridge_er_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.03297604083073176,
+    "std_rmse": 0.011905160678704703
+  },
+  "bridge_er_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.1257059745662315,
+    "std_rmse": 0.012728898722933538
+  },
+  "bridge_er_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.01434245800619113,
+    "std_rmse": 0.005311639955089145
+  },
+  "bridge_er_Z8_N256_Persistence": {
+    "mean_rmse": 0.6294254006210045,
+    "std_rmse": 0.023485480003105668
+  },
+  "bridge_er_Z8_N256_MeanField": {
+    "mean_rmse": 0.23903308718791183,
+    "std_rmse": 0.02054439503423105
+  },
+  "bridge_er_Z8_N256_SpecLow": {
+    "mean_rmse": 0.2704728254150831,
+    "std_rmse": 0.030370774953732922
+  },
+  "bridge_er_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.35137475427250675,
+    "std_rmse": 0.26852814349392984
+  },
+  "bridge_er_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.3348287587845259,
+    "std_rmse": 0.018033292320046065
+  },
+  "bridge_er_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.685552396360691,
+    "std_rmse": 0.023550762290306396
+  },
+  "bridge_er_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.0205647719183435,
+    "std_rmse": 0.012020640289111777
+  },
+  "bridge_er_Z8_N512_Persistence": {
+    "mean_rmse": 0.45589222925514133,
+    "std_rmse": 0.014697911819944098
+  },
+  "bridge_er_Z8_N512_MeanField": {
+    "mean_rmse": 0.2045410343311366,
+    "std_rmse": 0.013529527751700125
+  },
+  "bridge_er_Z8_N512_SpecLow": {
+    "mean_rmse": 0.40276402844898984,
+    "std_rmse": 0.02054219971643745
+  },
+  "bridge_er_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.5617407460400284,
+    "std_rmse": 0.016447127344842008
+  },
+  "bridge_er_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.22150058964283975,
+    "std_rmse": 0.011664932318127302
+  },
+  "bridge_er_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.497086755176016,
+    "std_rmse": 0.01576582414084356
+  },
+  "bridge_er_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.0203582879293717,
+    "std_rmse": 0.010243846963273283
+  },
+  "bridge_er_Z8_N1024_Persistence": {
+    "mean_rmse": 0.28516786885290263,
+    "std_rmse": 0.014751469925909817
+  },
+  "bridge_er_Z8_N1024_MeanField": {
+    "mean_rmse": 0.13764712995488396,
+    "std_rmse": 0.014775477212150737
+  },
+  "bridge_er_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.5482714408604061,
+    "std_rmse": 0.02082409146183727
+  },
+  "bridge_er_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.40269002798628073,
+    "std_rmse": 0.016018977754503498
+  },
+  "bridge_er_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.16884472107437604,
+    "std_rmse": 0.021836363573281406
+  },
+  "bridge_er_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.31757534029244794,
+    "std_rmse": 0.015306778027853785
+  },
+  "bridge_er_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.015789857607811205,
+    "std_rmse": 0.005745948284516083
+  },
+  "bridge_er_Z8_N2048_Persistence": {
+    "mean_rmse": 0.16487798346624585,
+    "std_rmse": 0.013134547842922322
+  },
+  "bridge_er_Z8_N2048_MeanField": {
+    "mean_rmse": 0.08499486012806892,
+    "std_rmse": 0.013508116915455443
+  },
+  "bridge_er_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.6435690722662166,
+    "std_rmse": 0.022601092180941494
+  },
+  "bridge_er_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.2786157303527653,
+    "std_rmse": 0.01410016477033181
+  },
+  "bridge_er_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.29387536566029393,
+    "std_rmse": 0.011334100756190001
+  },
+  "bridge_er_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.19374119916808133,
+    "std_rmse": 0.014097458333464905
+  },
+  "bridge_er_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.012587199309664837,
+    "std_rmse": 0.006963009375766939
+  },
+  "bridge_er_Z16_N1024_Persistence": {
+    "mean_rmse": 0.4484329128903983,
+    "std_rmse": 0.011232986682440086
+  },
+  "bridge_er_Z16_N1024_MeanField": {
+    "mean_rmse": 0.19733976591479402,
+    "std_rmse": 0.010627634260599232
+  },
+  "bridge_er_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.4086501282976811,
+    "std_rmse": 0.016080215387826245
+  },
+  "bridge_er_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.5597804515380377,
+    "std_rmse": 0.013671515018244804
+  },
+  "bridge_er_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.2398173080020071,
+    "std_rmse": 0.014546913506003996
+  },
+  "bridge_er_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.4892015190621663,
+    "std_rmse": 0.011139706006396253
+  },
+  "bridge_er_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.01445960961376426,
+    "std_rmse": 0.004365191258741582
+  },
+  "bridge_er_Z32_N256_Persistence": {
+    "mean_rmse": 0.7911378912274329,
+    "std_rmse": 0.005131660593825782
+  },
+  "bridge_er_Z32_N256_MeanField": {
+    "mean_rmse": 0.16669805431689205,
+    "std_rmse": 0.0017229065273294776
+  },
+  "bridge_er_Z32_N256_SpecLow": {
+    "mean_rmse": 0.13739603829310093,
+    "std_rmse": 0.016496581533791334
+  },
+  "bridge_er_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.04947895407605144,
+    "std_rmse": 0.011756149184584171
+  },
+  "bridge_er_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.5180441014991248,
+    "std_rmse": 0.0030671234357869765
+  },
+  "bridge_er_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.9396184880268219,
+    "std_rmse": 0.0037835266299171334
+  },
+  "bridge_er_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.01111968782766915,
+    "std_rmse": 0.004829756134925266
+  },
+  "bridge_er_Z32_N512_Persistence": {
+    "mean_rmse": 0.7635698923045029,
+    "std_rmse": 0.0040002135709057115
+  },
+  "bridge_er_Z32_N512_MeanField": {
+    "mean_rmse": 0.22862937550987303,
+    "std_rmse": 0.003589391710278178
+  },
+  "bridge_er_Z32_N512_SpecLow": {
+    "mean_rmse": 0.17712999953605318,
+    "std_rmse": 0.011881937953977004
+  },
+  "bridge_er_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.11006580640698702,
+    "std_rmse": 0.07777745968420684
+  },
+  "bridge_er_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.43765753455186474,
+    "std_rmse": 0.0039499878371730334
+  },
+  "bridge_er_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.8500418351981966,
+    "std_rmse": 0.0046331468000319264
+  },
+  "bridge_er_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.015413326774624685,
+    "std_rmse": 0.00403808050015204
+  },
+  "bridge_er_Z32_N1024_Persistence": {
+    "mean_rmse": 0.6365109831739706,
+    "std_rmse": 0.009224887494989517
+  },
+  "bridge_er_Z32_N1024_MeanField": {
+    "mean_rmse": 0.24386295385020448,
+    "std_rmse": 0.008158768749050142
+  },
+  "bridge_er_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.2599539129778843,
+    "std_rmse": 0.017191830620952545
+  },
+  "bridge_er_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.5189362847129331,
+    "std_rmse": 0.2694372818956251
+  },
+  "bridge_er_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.2705745451801677,
+    "std_rmse": 0.037660699616110474
+  },
+  "bridge_er_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.6884265675487836,
+    "std_rmse": 0.008397112585542108
+  },
+  "bridge_er_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.014258642315303896,
+    "std_rmse": 0.006689162774925476
+  },
+  "bridge_er_Z32_N2048_Persistence": {
+    "mean_rmse": 0.4555190237351899,
+    "std_rmse": 0.008629574823560348
+  },
+  "bridge_er_Z32_N2048_MeanField": {
+    "mean_rmse": 0.2021427311485108,
+    "std_rmse": 0.008152280578873192
+  },
+  "bridge_er_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.3960385722964108,
+    "std_rmse": 0.011477628250268017
+  },
+  "bridge_er_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.5691103929759759,
+    "std_rmse": 0.0067710746668068434
+  },
+  "bridge_er_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.17432603068471705,
+    "std_rmse": 0.0035306955606269857
+  },
+  "bridge_er_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.4950068575241329,
+    "std_rmse": 0.008607879349011508
+  },
+  "bridge_er_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.013487818586058303,
+    "std_rmse": 0.0028227919286848875
+  },
+  "bridge_ws_Z2_N1024_Persistence": {
+    "mean_rmse": 0.05315560108534898,
+    "std_rmse": 0.013729440075784357
+  },
+  "bridge_ws_Z2_N1024_MeanField": {
+    "mean_rmse": 0.020786610859852978,
+    "std_rmse": 0.007716194524555316
+  },
+  "bridge_ws_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.7198083027961267,
+    "std_rmse": 0.018206350362201973
+  },
+  "bridge_ws_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.6133835567981181,
+    "std_rmse": 0.015501667356947387
+  },
+  "bridge_ws_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.045445772003333454,
+    "std_rmse": 0.014654788392836347
+  },
+  "bridge_ws_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.08210299343569549,
+    "std_rmse": 0.014578056950782193
+  },
+  "bridge_ws_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.018393601268219425,
+    "std_rmse": 0.0060449505466741585
+  },
+  "bridge_ws_Z8_N256_Persistence": {
+    "mean_rmse": 0.5194115107558455,
+    "std_rmse": 0.015325364636765312
+  },
+  "bridge_ws_Z8_N256_MeanField": {
+    "mean_rmse": 0.15398513957264054,
+    "std_rmse": 0.012957631138103862
+  },
+  "bridge_ws_Z8_N256_SpecLow": {
+    "mean_rmse": 0.32500552585086323,
+    "std_rmse": 0.015978680602082
+  },
+  "bridge_ws_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.24270386075506606,
+    "std_rmse": 0.036731624988077805
+  },
+  "bridge_ws_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.262389618617434,
+    "std_rmse": 0.011269601184348122
+  },
+  "bridge_ws_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.57596515221651,
+    "std_rmse": 0.01720598913131732
+  },
+  "bridge_ws_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.03507577443761269,
+    "std_rmse": 0.021082645746912168
+  },
+  "bridge_ws_Z8_N512_Persistence": {
+    "mean_rmse": 0.332493806391933,
+    "std_rmse": 0.0174082480117725
+  },
+  "bridge_ws_Z8_N512_MeanField": {
+    "mean_rmse": 0.09839806352673723,
+    "std_rmse": 0.012293934084595871
+  },
+  "bridge_ws_Z8_N512_SpecLow": {
+    "mean_rmse": 0.46970381466621597,
+    "std_rmse": 0.019079966069697394
+  },
+  "bridge_ws_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.3638827891712463,
+    "std_rmse": 0.029753044154540494
+  },
+  "bridge_ws_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.15274227176680927,
+    "std_rmse": 0.007395710112134109
+  },
+  "bridge_ws_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.37184387857616674,
+    "std_rmse": 0.016914365979413086
+  },
+  "bridge_ws_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.020209248237593257,
+    "std_rmse": 0.008741061101073797
+  },
+  "bridge_ws_Z8_N1024_Persistence": {
+    "mean_rmse": 0.1872223492036576,
+    "std_rmse": 0.013427668032675545
+  },
+  "bridge_ws_Z8_N1024_MeanField": {
+    "mean_rmse": 0.054287651996521226,
+    "std_rmse": 0.009921468291404329
+  },
+  "bridge_ws_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.5994322998684527,
+    "std_rmse": 0.014530981884659698
+  },
+  "bridge_ws_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.49267044339860655,
+    "std_rmse": 0.020170107951698487
+  },
+  "bridge_ws_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.04139541210260082,
+    "std_rmse": 0.012844526660756974
+  },
+  "bridge_ws_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.22032125084032064,
+    "std_rmse": 0.013897388868832437
+  },
+  "bridge_ws_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.01870537835259416,
+    "std_rmse": 0.008094567743132546
+  },
+  "bridge_ws_Z8_N2048_Persistence": {
+    "mean_rmse": 0.10445326670215209,
+    "std_rmse": 0.007553279661792089
+  },
+  "bridge_ws_Z8_N2048_MeanField": {
+    "mean_rmse": 0.03148281021388325,
+    "std_rmse": 0.0057138278142885605
+  },
+  "bridge_ws_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.6743374660848094,
+    "std_rmse": 0.009288545779932052
+  },
+  "bridge_ws_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.5683461912552812,
+    "std_rmse": 0.012914420345092022
+  },
+  "bridge_ws_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.3429339145034515,
+    "std_rmse": 0.007152604339674009
+  },
+  "bridge_ws_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.1334968003765779,
+    "std_rmse": 0.007731539091057713
+  },
+  "bridge_ws_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.015410744744798702,
+    "std_rmse": 0.005549264803356806
+  },
+  "bridge_ws_Z16_N1024_Persistence": {
+    "mean_rmse": 0.3328832264394247,
+    "std_rmse": 0.012845977356534945
+  },
+  "bridge_ws_Z16_N1024_MeanField": {
+    "mean_rmse": 0.09921171235839266,
+    "std_rmse": 0.010648988388860758
+  },
+  "bridge_ws_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.4744437964656661,
+    "std_rmse": 0.01071021357709171
+  },
+  "bridge_ws_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.371461102986257,
+    "std_rmse": 0.01124263283035317
+  },
+  "bridge_ws_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.10755604308989561,
+    "std_rmse": 0.012481208121302267
+  },
+  "bridge_ws_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.37257020956587655,
+    "std_rmse": 0.012845505659152026
+  },
+  "bridge_ws_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.01572942873974077,
+    "std_rmse": 0.006276212260862036
+  },
+  "bridge_ws_Z32_N256_Persistence": {
+    "mean_rmse": 0.7579992791004992,
+    "std_rmse": 0.0073290769094033655
+  },
+  "bridge_ws_Z32_N256_MeanField": {
+    "mean_rmse": 0.1575811009825941,
+    "std_rmse": 0.002691685920752879
+  },
+  "bridge_ws_Z32_N256_SpecLow": {
+    "mean_rmse": 0.17066627340355595,
+    "std_rmse": 0.011782201331134218
+  },
+  "bridge_ws_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.15604707195260087,
+    "std_rmse": 0.015079933500542288
+  },
+  "bridge_ws_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.4917843283439548,
+    "std_rmse": 0.003382623984047978
+  },
+  "bridge_ws_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.906809986825247,
+    "std_rmse": 0.0038442282248361296
+  },
+  "bridge_ws_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.10845206251568373,
+    "std_rmse": 0.004072465432988565
+  },
+  "bridge_ws_Z32_N512_Persistence": {
+    "mean_rmse": 0.6751483936550745,
+    "std_rmse": 0.007137972915845317
+  },
+  "bridge_ws_Z32_N512_MeanField": {
+    "mean_rmse": 0.17431316076669368,
+    "std_rmse": 0.005686750658224101
+  },
+  "bridge_ws_Z32_N512_SpecLow": {
+    "mean_rmse": 0.21038526045590294,
+    "std_rmse": 0.009076690726824365
+  },
+  "bridge_ws_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.15194654036296712,
+    "std_rmse": 0.015297276152999565
+  },
+  "bridge_ws_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.3647333104575012,
+    "std_rmse": 0.006746097792129368
+  },
+  "bridge_ws_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.7630539018143666,
+    "std_rmse": 0.007621789975494616
+  },
+  "bridge_ws_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.11244718204605275,
+    "std_rmse": 0.008366852070216143
+  },
+  "bridge_ws_Z32_N1024_Persistence": {
+    "mean_rmse": 0.5100035366181255,
+    "std_rmse": 0.006722661107955474
+  },
+  "bridge_ws_Z32_N1024_MeanField": {
+    "mean_rmse": 0.14670716108071752,
+    "std_rmse": 0.005222831005631368
+  },
+  "bridge_ws_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.32989571460808204,
+    "std_rmse": 0.008779821431059641
+  },
+  "bridge_ws_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.22628272851774206,
+    "std_rmse": 0.01752167791319799
+  },
+  "bridge_ws_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.1716008636665835,
+    "std_rmse": 0.005437087922455794
+  },
+  "bridge_ws_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.565037769671125,
+    "std_rmse": 0.006886583525251719
+  },
+  "bridge_ws_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.012729389527054403,
+    "std_rmse": 0.005842116408601251
+  },
+  "bridge_ws_Z32_N2048_Persistence": {
+    "mean_rmse": 0.3294929100260206,
+    "std_rmse": 0.007089434485082482
+  },
+  "bridge_ws_Z32_N2048_MeanField": {
+    "mean_rmse": 0.09624379270498785,
+    "std_rmse": 0.004021942294180195
+  },
+  "bridge_ws_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.4769568331006022,
+    "std_rmse": 0.009565588786014706
+  },
+  "bridge_ws_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.3681576308340683,
+    "std_rmse": 0.01024719412996991
+  },
+  "bridge_ws_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.1771378501558782,
+    "std_rmse": 0.004942301834644188
+  },
+  "bridge_ws_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.369883704940685,
+    "std_rmse": 0.007518681245565016
+  },
+  "bridge_ws_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.016212880975281143,
+    "std_rmse": 0.006727062448853924
+  },
+  "hub_ba_Z2_N1024_Persistence": {
+    "mean_rmse": 0.3744745736075308,
+    "std_rmse": 0.03000007465562584
+  },
+  "hub_ba_Z2_N1024_MeanField": {
+    "mean_rmse": 0.3314842829534336,
+    "std_rmse": 0.030408001631354018
+  },
+  "hub_ba_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.6806335101025123,
+    "std_rmse": 0.3458692184570077
+  },
+  "hub_ba_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.26943272146379044,
+    "std_rmse": 0.13990055702310045
+  },
+  "hub_ba_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.27134873369487533,
+    "std_rmse": 0.02493100312243438
+  },
+  "hub_ba_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.26425297791554725,
+    "std_rmse": 0.03652206708429088
+  },
+  "hub_ba_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.028969136394397944,
+    "std_rmse": 0.009100607968076293
+  },
+  "hub_ba_Z8_N256_Persistence": {
+    "mean_rmse": 0.8344621752392134,
+    "std_rmse": 0.00789499649783035
+  },
+  "hub_ba_Z8_N256_MeanField": {
+    "mean_rmse": 0.42065415737859213,
+    "std_rmse": 0.005937960448515849
+  },
+  "hub_ba_Z8_N256_SpecLow": {
+    "mean_rmse": 0.11832381485082336,
+    "std_rmse": 0.021791064144739445
+  },
+  "hub_ba_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.06681877092032747,
+    "std_rmse": 0.026037209863614786
+  },
+  "hub_ba_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.48938043732729514,
+    "std_rmse": 0.00482438077152234
+  },
+  "hub_ba_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.8916469467465065,
+    "std_rmse": 0.006414108984804137
+  },
+  "hub_ba_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.016038143865711656,
+    "std_rmse": 0.004836297745032969
+  },
+  "hub_ba_Z8_N512_Persistence": {
+    "mean_rmse": 0.7789092187335518,
+    "std_rmse": 0.008857942156742835
+  },
+  "hub_ba_Z8_N512_MeanField": {
+    "mean_rmse": 0.5114471955936823,
+    "std_rmse": 0.009101764465154791
+  },
+  "hub_ba_Z8_N512_SpecLow": {
+    "mean_rmse": 0.11751486777923603,
+    "std_rmse": 0.054989631342434724
+  },
+  "hub_ba_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.07652066584853057,
+    "std_rmse": 0.02583960252411369
+  },
+  "hub_ba_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.44377314442851407,
+    "std_rmse": 0.007234573829565418
+  },
+  "hub_ba_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.8212435641626097,
+    "std_rmse": 0.009578074822161796
+  },
+  "hub_ba_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.01662392737759888,
+    "std_rmse": 0.005982328096295478
+  },
+  "hub_ba_Z8_N1024_Persistence": {
+    "mean_rmse": 0.702518485427467,
+    "std_rmse": 0.015660425678974767
+  },
+  "hub_ba_Z8_N1024_MeanField": {
+    "mean_rmse": 0.5470583490749877,
+    "std_rmse": 0.014920856378318716
+  },
+  "hub_ba_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.11662491647481157,
+    "std_rmse": 0.02469170833613497
+  },
+  "hub_ba_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.0734724701335178,
+    "std_rmse": 0.02453236478776141
+  },
+  "hub_ba_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.2494402687821226,
+    "std_rmse": 0.013156802202993029
+  },
+  "hub_ba_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.5155111453203189,
+    "std_rmse": 0.04466181244608166
+  },
+  "hub_ba_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.011660983721685808,
+    "std_rmse": 0.0060024508239695604
+  },
+  "hub_ba_Z8_N2048_Persistence": {
+    "mean_rmse": 0.6063603311392682,
+    "std_rmse": 0.02650346287967886
+  },
+  "hub_ba_Z8_N2048_MeanField": {
+    "mean_rmse": 0.5217246559594652,
+    "std_rmse": 0.026188894580434836
+  },
+  "hub_ba_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.14773765393117416,
+    "std_rmse": 0.02420386609752042
+  },
+  "hub_ba_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.16355640830920673,
+    "std_rmse": 0.06340663889955554
+  },
+  "hub_ba_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.24982348291855963,
+    "std_rmse": 0.017903765889577174
+  },
+  "hub_ba_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.17497750632773237,
+    "std_rmse": 0.07196371504317552
+  },
+  "hub_ba_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.027366381911764846,
+    "std_rmse": 0.00987884458174367
+  },
+  "hub_ba_Z16_N1024_Persistence": {
+    "mean_rmse": 0.8081350277209898,
+    "std_rmse": 0.008518376136610701
+  },
+  "hub_ba_Z16_N1024_MeanField": {
+    "mean_rmse": 0.5404396372272301,
+    "std_rmse": 0.00688892910342561
+  },
+  "hub_ba_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.08892256871422587,
+    "std_rmse": 0.009860390142601799
+  },
+  "hub_ba_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.077047988568408,
+    "std_rmse": 0.035614570796412205
+  },
+  "hub_ba_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.17539582996278172,
+    "std_rmse": 0.006120249576155872
+  },
+  "hub_ba_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.3237604669843853,
+    "std_rmse": 0.08354420930532688
+  },
+  "hub_ba_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.008055933208965926,
+    "std_rmse": 0.0023183594719993913
+  },
+  "hub_ba_Z32_N256_Persistence": {
+    "mean_rmse": 0.8280372352956226,
+    "std_rmse": 0.00583570164534746
+  },
+  "hub_ba_Z32_N256_MeanField": {
+    "mean_rmse": 0.1872578855773447,
+    "std_rmse": 0.001380650308198377
+  },
+  "hub_ba_Z32_N256_SpecLow": {
+    "mean_rmse": 0.10796911947780366,
+    "std_rmse": 0.005933295781304781
+  },
+  "hub_ba_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.0483238552288736,
+    "std_rmse": 0.011844214131555094
+  },
+  "hub_ba_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.5469997057541113,
+    "std_rmse": 0.0012692022905019264
+  },
+  "hub_ba_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.97938978369389,
+    "std_rmse": 0.00167286303540226
+  },
+  "hub_ba_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.009799977437364328,
+    "std_rmse": 0.002079757908428944
+  },
+  "hub_ba_Z32_N512_Persistence": {
+    "mean_rmse": 0.8673497528999988,
+    "std_rmse": 0.0044558711775296005
+  },
+  "hub_ba_Z32_N512_MeanField": {
+    "mean_rmse": 0.3104761384788491,
+    "std_rmse": 0.0016203542408359118
+  },
+  "hub_ba_Z32_N512_SpecLow": {
+    "mean_rmse": 0.10257256677384445,
+    "std_rmse": 0.005012389291783948
+  },
+  "hub_ba_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.03881862405177601,
+    "std_rmse": 0.012191195248511956
+  },
+  "hub_ba_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.5218151201894184,
+    "std_rmse": 0.0014316187346070366
+  },
+  "hub_ba_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.9558668023426456,
+    "std_rmse": 0.0016742353299685926
+  },
+  "hub_ba_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.010292233187406435,
+    "std_rmse": 0.0021883448780619
+  },
+  "hub_ba_Z32_N1024_Persistence": {
+    "mean_rmse": 0.8637521359043422,
+    "std_rmse": 0.0038379674799307617
+  },
+  "hub_ba_Z32_N1024_MeanField": {
+    "mean_rmse": 0.44940339550804725,
+    "std_rmse": 0.0031378114965722103
+  },
+  "hub_ba_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.0959597446914383,
+    "std_rmse": 0.0045828245392602026
+  },
+  "hub_ba_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.04825042282136369,
+    "std_rmse": 0.015172624381706528
+  },
+  "hub_ba_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.1293893094194405,
+    "std_rmse": 0.003828812814287056
+  },
+  "hub_ba_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.13564313412497592,
+    "std_rmse": 0.03528610667698546
+  },
+  "hub_ba_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.007483931321926656,
+    "std_rmse": 0.001793017086284421
+  },
+  "hub_ba_Z32_N2048_Persistence": {
+    "mean_rmse": 0.8306307071937654,
+    "std_rmse": 0.005100225265937706
+  },
+  "hub_ba_Z32_N2048_MeanField": {
+    "mean_rmse": 0.5615788600456553,
+    "std_rmse": 0.004996004398792237
+  },
+  "hub_ba_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.08612832285873098,
+    "std_rmse": 0.006626152425469481
+  },
+  "hub_ba_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.0590180514298872,
+    "std_rmse": 0.015033334154099746
+  },
+  "hub_ba_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.4323159024231481,
+    "std_rmse": 0.004309418954179837
+  },
+  "hub_ba_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.07180899052511522,
+    "std_rmse": 0.021872623775883594
+  },
+  "hub_ba_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.01299317215580206,
+    "std_rmse": 0.002904627821271136
+  },
+  "hub_er_Z2_N1024_Persistence": {
+    "mean_rmse": 0.08436905141470741,
+    "std_rmse": 0.02120815863216652
+  },
+  "hub_er_Z2_N1024_MeanField": {
+    "mean_rmse": 0.044555114057270875,
+    "std_rmse": 0.017786364276396738
+  },
+  "hub_er_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.7190735047880422,
+    "std_rmse": 0.030451575089608877
+  },
+  "hub_er_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.20355877328252342,
+    "std_rmse": 0.020738731673316704
+  },
+  "hub_er_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.027099604925024206,
+    "std_rmse": 0.010439160260571404
+  },
+  "hub_er_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.11253443190795483,
+    "std_rmse": 0.021137300624877425
+  },
+  "hub_er_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.019876656907872565,
+    "std_rmse": 0.013730839366626496
+  },
+  "hub_er_Z8_N256_Persistence": {
+    "mean_rmse": 0.6259152966416518,
+    "std_rmse": 0.014461825581949176
+  },
+  "hub_er_Z8_N256_MeanField": {
+    "mean_rmse": 0.23856227504913177,
+    "std_rmse": 0.014737776582132241
+  },
+  "hub_er_Z8_N256_SpecLow": {
+    "mean_rmse": 0.280326849765359,
+    "std_rmse": 0.019401122869982107
+  },
+  "hub_er_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.40472308241468635,
+    "std_rmse": 0.24980737394422567
+  },
+  "hub_er_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.33443455850396364,
+    "std_rmse": 0.012550863474437656
+  },
+  "hub_er_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.6841085130193394,
+    "std_rmse": 0.017401776641567696
+  },
+  "hub_er_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.018463826011179563,
+    "std_rmse": 0.007154073102844918
+  },
+  "hub_er_Z8_N512_Persistence": {
+    "mean_rmse": 0.45569630118287846,
+    "std_rmse": 0.019339651210109107
+  },
+  "hub_er_Z8_N512_MeanField": {
+    "mean_rmse": 0.204054159137594,
+    "std_rmse": 0.018086234885932653
+  },
+  "hub_er_Z8_N512_SpecLow": {
+    "mean_rmse": 0.4142535712834693,
+    "std_rmse": 0.021426281616514567
+  },
+  "hub_er_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.5060099453403522,
+    "std_rmse": 0.13567691273488258
+  },
+  "hub_er_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.22184288938951485,
+    "std_rmse": 0.014143111339822306
+  },
+  "hub_er_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.49736129154865927,
+    "std_rmse": 0.020699821329901346
+  },
+  "hub_er_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.024991262233987743,
+    "std_rmse": 0.011341749727664937
+  },
+  "hub_er_Z8_N1024_Persistence": {
+    "mean_rmse": 0.29058189237058096,
+    "std_rmse": 0.014570157260956723
+  },
+  "hub_er_Z8_N1024_MeanField": {
+    "mean_rmse": 0.14388377227088292,
+    "std_rmse": 0.01372508855140775
+  },
+  "hub_er_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.5399604408640662,
+    "std_rmse": 0.02416567487586583
+  },
+  "hub_er_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.40609076107451303,
+    "std_rmse": 0.016556511906837365
+  },
+  "hub_er_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.18202213139133291,
+    "std_rmse": 0.015836248867334007
+  },
+  "hub_er_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.32428439066242704,
+    "std_rmse": 0.014043782468852137
+  },
+  "hub_er_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.014860824765339588,
+    "std_rmse": 0.004203288986951637
+  },
+  "hub_er_Z8_N2048_Persistence": {
+    "mean_rmse": 0.17544319786949789,
+    "std_rmse": 0.012010451556557302
+  },
+  "hub_er_Z8_N2048_MeanField": {
+    "mean_rmse": 0.09504319352778877,
+    "std_rmse": 0.011175946910744214
+  },
+  "hub_er_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.6382164501021019,
+    "std_rmse": 0.021950966617386877
+  },
+  "hub_er_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.2931663469551685,
+    "std_rmse": 0.013655349005487694
+  },
+  "hub_er_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.28438302864209686,
+    "std_rmse": 0.009908552437792241
+  },
+  "hub_er_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.20483759589753156,
+    "std_rmse": 0.011825403155449759
+  },
+  "hub_er_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.013268041318558025,
+    "std_rmse": 0.006068239204046549
+  },
+  "hub_er_Z16_N1024_Persistence": {
+    "mean_rmse": 0.4594073047153051,
+    "std_rmse": 0.012729280807435125
+  },
+  "hub_er_Z16_N1024_MeanField": {
+    "mean_rmse": 0.20834859114249288,
+    "std_rmse": 0.011360604876021311
+  },
+  "hub_er_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.3995674349094819,
+    "std_rmse": 0.011332726688937807
+  },
+  "hub_er_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.5718354795372891,
+    "std_rmse": 0.010503064681707079
+  },
+  "hub_er_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.25107153764720674,
+    "std_rmse": 0.015337802485102314
+  },
+  "hub_er_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.5008866256924881,
+    "std_rmse": 0.012230629538551046
+  },
+  "hub_er_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.017554849500261666,
+    "std_rmse": 0.005526372338274698
+  },
+  "hub_er_Z32_N256_Persistence": {
+    "mean_rmse": 0.7863953795546166,
+    "std_rmse": 0.005806588224929794
+  },
+  "hub_er_Z32_N256_MeanField": {
+    "mean_rmse": 0.16575993313171183,
+    "std_rmse": 0.0010156722901146376
+  },
+  "hub_er_Z32_N256_SpecLow": {
+    "mean_rmse": 0.1422080128772279,
+    "std_rmse": 0.012480187095824324
+  },
+  "hub_er_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.058436897435640754,
+    "std_rmse": 0.027777022546954428
+  },
+  "hub_er_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.5156234185743688,
+    "std_rmse": 0.0020633952065571143
+  },
+  "hub_er_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.9365580831429069,
+    "std_rmse": 0.002688365649168741
+  },
+  "hub_er_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.00748759908655382,
+    "std_rmse": 0.0028330827972259205
+  },
+  "hub_er_Z32_N512_Persistence": {
+    "mean_rmse": 0.7638016091916772,
+    "std_rmse": 0.006213919686144847
+  },
+  "hub_er_Z32_N512_MeanField": {
+    "mean_rmse": 0.22911851915401074,
+    "std_rmse": 0.0024795275960335914
+  },
+  "hub_er_Z32_N512_SpecLow": {
+    "mean_rmse": 0.17678406538960817,
+    "std_rmse": 0.013519390430318426
+  },
+  "hub_er_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.09950086559158863,
+    "std_rmse": 0.05099894212490865
+  },
+  "hub_er_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.43800261176535205,
+    "std_rmse": 0.003636216533002791
+  },
+  "hub_er_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.8501758730164297,
+    "std_rmse": 0.00446036424770388
+  },
+  "hub_er_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.01793119189817049,
+    "std_rmse": 0.004396056275292304
+  },
+  "hub_er_Z32_N1024_Persistence": {
+    "mean_rmse": 0.6409160255449147,
+    "std_rmse": 0.00838485080988395
+  },
+  "hub_er_Z32_N1024_MeanField": {
+    "mean_rmse": 0.24688771980576368,
+    "std_rmse": 0.006123495924697955
+  },
+  "hub_er_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.2636490005243347,
+    "std_rmse": 0.01816117269639553
+  },
+  "hub_er_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.4746517827699413,
+    "std_rmse": 0.2572672436498866
+  },
+  "hub_er_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.29723182785873004,
+    "std_rmse": 0.016128620386845587
+  },
+  "hub_er_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.6911802458161943,
+    "std_rmse": 0.007663091054135406
+  },
+  "hub_er_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.017004799630034158,
+    "std_rmse": 0.006791081871291855
+  },
+  "hub_er_Z32_N2048_Persistence": {
+    "mean_rmse": 0.4579420033919169,
+    "std_rmse": 0.007530614172893989
+  },
+  "hub_er_Z32_N2048_MeanField": {
+    "mean_rmse": 0.2050721684352063,
+    "std_rmse": 0.006912297373433859
+  },
+  "hub_er_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.3937494208444764,
+    "std_rmse": 0.012571157070614923
+  },
+  "hub_er_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.5674321829698596,
+    "std_rmse": 0.009463932350483187
+  },
+  "hub_er_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.17604191168884245,
+    "std_rmse": 0.004412126726266132
+  },
+  "hub_er_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.4977799333172702,
+    "std_rmse": 0.006755365608730973
+  },
+  "hub_er_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.01247300596532924,
+    "std_rmse": 0.0033175949568257667
+  },
+  "hub_ws_Z2_N1024_Persistence": {
+    "mean_rmse": 0.06401023479795141,
+    "std_rmse": 0.018939344065751713
+  },
+  "hub_ws_Z2_N1024_MeanField": {
+    "mean_rmse": 0.0264989960328892,
+    "std_rmse": 0.013621917689103216
+  },
+  "hub_ws_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.707558353389595,
+    "std_rmse": 0.018473182443278408
+  },
+  "hub_ws_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.6059611880146079,
+    "std_rmse": 0.02829796081005927
+  },
+  "hub_ws_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.03572760350320568,
+    "std_rmse": 0.015076994721129116
+  },
+  "hub_ws_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.09341257712681425,
+    "std_rmse": 0.018417776177001948
+  },
+  "hub_ws_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.0170471547711322,
+    "std_rmse": 0.011755564109323808
+  },
+  "hub_ws_Z8_N256_Persistence": {
+    "mean_rmse": 0.5106549071614574,
+    "std_rmse": 0.024578568154830383
+  },
+  "hub_ws_Z8_N256_MeanField": {
+    "mean_rmse": 0.14262210155234184,
+    "std_rmse": 0.018424917228574623
+  },
+  "hub_ws_Z8_N256_SpecLow": {
+    "mean_rmse": 0.33483140776296605,
+    "std_rmse": 0.019892180355472345
+  },
+  "hub_ws_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.23363385863546865,
+    "std_rmse": 0.022826419973144958
+  },
+  "hub_ws_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.25312973285475715,
+    "std_rmse": 0.014835074313471861
+  },
+  "hub_ws_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.5640616539777368,
+    "std_rmse": 0.02632901565845178
+  },
+  "hub_ws_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.02874918466666059,
+    "std_rmse": 0.01383528336739592
+  },
+  "hub_ws_Z8_N512_Persistence": {
+    "mean_rmse": 0.331187400828392,
+    "std_rmse": 0.00889826793833545
+  },
+  "hub_ws_Z8_N512_MeanField": {
+    "mean_rmse": 0.09368308887306345,
+    "std_rmse": 0.008234755679787742
+  },
+  "hub_ws_Z8_N512_SpecLow": {
+    "mean_rmse": 0.46883223324689355,
+    "std_rmse": 0.011828404092954296
+  },
+  "hub_ws_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.3707557665575233,
+    "std_rmse": 0.01660835630173805
+  },
+  "hub_ws_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.14993054546954412,
+    "std_rmse": 0.0038651333689319937
+  },
+  "hub_ws_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.37057642022051185,
+    "std_rmse": 0.010356690380378
+  },
+  "hub_ws_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.01932646860692569,
+    "std_rmse": 0.007703430299287088
+  },
+  "hub_ws_Z8_N1024_Persistence": {
+    "mean_rmse": 0.1978355097575427,
+    "std_rmse": 0.01061352014533021
+  },
+  "hub_ws_Z8_N1024_MeanField": {
+    "mean_rmse": 0.0627230010937655,
+    "std_rmse": 0.009187451165458854
+  },
+  "hub_ws_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.5945754164430904,
+    "std_rmse": 0.00917060683700716
+  },
+  "hub_ws_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.4870260946125587,
+    "std_rmse": 0.019788246403389418
+  },
+  "hub_ws_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.051738033807706627,
+    "std_rmse": 0.010566932590936582
+  },
+  "hub_ws_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.23103553281575123,
+    "std_rmse": 0.010927465757598736
+  },
+  "hub_ws_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.01381097971661201,
+    "std_rmse": 0.006184001414215144
+  },
+  "hub_ws_Z8_N2048_Persistence": {
+    "mean_rmse": 0.11439361620456175,
+    "std_rmse": 0.008218095188101088
+  },
+  "hub_ws_Z8_N2048_MeanField": {
+    "mean_rmse": 0.036936831653033235,
+    "std_rmse": 0.006280949439435446
+  },
+  "hub_ws_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.6683713735167632,
+    "std_rmse": 0.0076907050431632
+  },
+  "hub_ws_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.5578988168721817,
+    "std_rmse": 0.009437964073774396
+  },
+  "hub_ws_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.3343906480664957,
+    "std_rmse": 0.006630548929516527
+  },
+  "hub_ws_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.14284028599002624,
+    "std_rmse": 0.007557872915297375
+  },
+  "hub_ws_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.010848651581914795,
+    "std_rmse": 0.004885027112011985
+  },
+  "hub_ws_Z16_N1024_Persistence": {
+    "mean_rmse": 0.33035386794166527,
+    "std_rmse": 0.01761336492914891
+  },
+  "hub_ws_Z16_N1024_MeanField": {
+    "mean_rmse": 0.09621448594873669,
+    "std_rmse": 0.013276119350040642
+  },
+  "hub_ws_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.4727843797224148,
+    "std_rmse": 0.009648374433988716
+  },
+  "hub_ws_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.37293472745549616,
+    "std_rmse": 0.01701058610694244
+  },
+  "hub_ws_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.106181686346927,
+    "std_rmse": 0.015930303033306063
+  },
+  "hub_ws_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.3724773571907748,
+    "std_rmse": 0.016370148668203268
+  },
+  "hub_ws_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.021038823603040217,
+    "std_rmse": 0.010393688891647298
+  },
+  "hub_ws_Z32_N256_Persistence": {
+    "mean_rmse": 0.7411576732079865,
+    "std_rmse": 0.02334362148982969
+  },
+  "hub_ws_Z32_N256_MeanField": {
+    "mean_rmse": 0.1503712974922279,
+    "std_rmse": 0.007865476744664165
+  },
+  "hub_ws_Z32_N256_SpecLow": {
+    "mean_rmse": 0.1645322725162151,
+    "std_rmse": 0.01745759099576343
+  },
+  "hub_ws_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.14002683985538747,
+    "std_rmse": 0.01508593151563994
+  },
+  "hub_ws_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.476419298078805,
+    "std_rmse": 0.020397208461256044
+  },
+  "hub_ws_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.8901209056109465,
+    "std_rmse": 0.02290982847092342
+  },
+  "hub_ws_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.08554801065732423,
+    "std_rmse": 0.032454798170925454
+  },
+  "hub_ws_Z32_N512_Persistence": {
+    "mean_rmse": 0.6587978803513559,
+    "std_rmse": 0.016334580561034262
+  },
+  "hub_ws_Z32_N512_MeanField": {
+    "mean_rmse": 0.1608856519962944,
+    "std_rmse": 0.010211399644677517
+  },
+  "hub_ws_Z32_N512_SpecLow": {
+    "mean_rmse": 0.21531661626519966,
+    "std_rmse": 0.015195671925656885
+  },
+  "hub_ws_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.14252401666675127,
+    "std_rmse": 0.012825240231392705
+  },
+  "hub_ws_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.3486580829473944,
+    "std_rmse": 0.015041016752106605
+  },
+  "hub_ws_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.7463793978605413,
+    "std_rmse": 0.017598502958845276
+  },
+  "hub_ws_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.09975207462428828,
+    "std_rmse": 0.018165799961348175
+  },
+  "hub_ws_Z32_N1024_Persistence": {
+    "mean_rmse": 0.499757495647826,
+    "std_rmse": 0.01481810275339281
+  },
+  "hub_ws_Z32_N1024_MeanField": {
+    "mean_rmse": 0.13751027773604912,
+    "std_rmse": 0.01056962454610039
+  },
+  "hub_ws_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.3323063077943781,
+    "std_rmse": 0.009363231967823871
+  },
+  "hub_ws_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.23911974976081107,
+    "std_rmse": 0.01108544049043389
+  },
+  "hub_ws_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.17863615982145792,
+    "std_rmse": 0.012209596369602593
+  },
+  "hub_ws_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.5542822988573448,
+    "std_rmse": 0.014889284115925518
+  },
+  "hub_ws_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.014991917333627874,
+    "std_rmse": 0.003268079027044641
+  },
+  "hub_ws_Z32_N2048_Persistence": {
+    "mean_rmse": 0.3334051040057141,
+    "std_rmse": 0.011714530162817729
+  },
+  "hub_ws_Z32_N2048_MeanField": {
+    "mean_rmse": 0.09793498951196178,
+    "std_rmse": 0.00875827793021191
+  },
+  "hub_ws_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.4708664453362498,
+    "std_rmse": 0.007165139055598357
+  },
+  "hub_ws_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.36598652380683855,
+    "std_rmse": 0.011249999795538193
+  },
+  "hub_ws_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.17350333546652547,
+    "std_rmse": 0.004662421026227745
+  },
+  "hub_ws_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.3745430056170014,
+    "std_rmse": 0.011673358381176762
+  },
+  "hub_ws_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.01584561418510367,
+    "std_rmse": 0.007414284920866491
+  },
+  "random_ba_Z2_N1024_Persistence": {
+    "mean_rmse": 0.05386869575421843,
+    "std_rmse": 0.03678606593065094
+  },
+  "random_ba_Z2_N1024_MeanField": {
+    "mean_rmse": 0.031365482541881394,
+    "std_rmse": 0.027818479202742285
+  },
+  "random_ba_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.6084345933482813,
+    "std_rmse": 0.15066418769880313
+  },
+  "random_ba_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.11497278546298009,
+    "std_rmse": 0.04004665385685362
+  },
+  "random_ba_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.576869005464338,
+    "std_rmse": 0.043236457615729876
+  },
+  "random_ba_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.05506965313589022,
+    "std_rmse": 0.028989425079294074
+  },
+  "random_ba_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.017415408561287808,
+    "std_rmse": 0.006402109180102118
+  },
+  "random_ba_Z8_N256_Persistence": {
+    "mean_rmse": 0.4758628401353164,
+    "std_rmse": 0.09742014776226053
+  },
+  "random_ba_Z8_N256_MeanField": {
+    "mean_rmse": 0.1560433912126511,
+    "std_rmse": 0.04936662864008776
+  },
+  "random_ba_Z8_N256_SpecLow": {
+    "mean_rmse": 0.4467055381381072,
+    "std_rmse": 0.3094241214802031
+  },
+  "random_ba_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.30052908610037865,
+    "std_rmse": 0.15448742671252194
+  },
+  "random_ba_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.2547569032890478,
+    "std_rmse": 0.04660896077970743
+  },
+  "random_ba_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.5297772881418048,
+    "std_rmse": 0.10056261569419417
+  },
+  "random_ba_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.027898995000511996,
+    "std_rmse": 0.008929364906481442
+  },
+  "random_ba_Z8_N512_Persistence": {
+    "mean_rmse": 0.3249460323672068,
+    "std_rmse": 0.07482964214377454
+  },
+  "random_ba_Z8_N512_MeanField": {
+    "mean_rmse": 0.1157027832543441,
+    "std_rmse": 0.04194563127186975
+  },
+  "random_ba_Z8_N512_SpecLow": {
+    "mean_rmse": 0.6113633595874368,
+    "std_rmse": 0.3405105497031026
+  },
+  "random_ba_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.30518287879090444,
+    "std_rmse": 0.15440584003038238
+  },
+  "random_ba_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.19739882728805258,
+    "std_rmse": 0.01820728070492847
+  },
+  "random_ba_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.3650664805534959,
+    "std_rmse": 0.07531953483789991
+  },
+  "random_ba_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.025575194287543394,
+    "std_rmse": 0.014326619023951284
+  },
+  "random_ba_Z8_N1024_Persistence": {
+    "mean_rmse": 0.18565220984895328,
+    "std_rmse": 0.05094532547077179
+  },
+  "random_ba_Z8_N1024_MeanField": {
+    "mean_rmse": 0.07106601167164847,
+    "std_rmse": 0.02218555733379711
+  },
+  "random_ba_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.5386797808671513,
+    "std_rmse": 0.3165966394642811
+  },
+  "random_ba_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.21567718723030227,
+    "std_rmse": 0.03996853450495966
+  },
+  "random_ba_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.7222576949690442,
+    "std_rmse": 0.04836717865980247
+  },
+  "random_ba_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.06939155105601427,
+    "std_rmse": 0.021818586561262954
+  },
+  "random_ba_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.02102737013792156,
+    "std_rmse": 0.008350358759104592
+  },
+  "random_ba_Z8_N2048_Persistence": {
+    "mean_rmse": 0.10632374608688615,
+    "std_rmse": 0.04743273248881093
+  },
+  "random_ba_Z8_N2048_MeanField": {
+    "mean_rmse": 0.046669955364843765,
+    "std_rmse": 0.03583754647063819
+  },
+  "random_ba_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.529621411401284,
+    "std_rmse": 0.1804605126881046
+  },
+  "random_ba_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.14399699718394846,
+    "std_rmse": 0.05046479347376636
+  },
+  "random_ba_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.34396604812033915,
+    "std_rmse": 0.0395266055982855
+  },
+  "random_ba_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.045460749173183435,
+    "std_rmse": 0.030957307786937515
+  },
+  "random_ba_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.01602841488550313,
+    "std_rmse": 0.004971661054097736
+  },
+  "random_ba_Z16_N1024_Persistence": {
+    "mean_rmse": 0.3525520207082368,
+    "std_rmse": 0.07704413072687491
+  },
+  "random_ba_Z16_N1024_MeanField": {
+    "mean_rmse": 0.12823432274560825,
+    "std_rmse": 0.05104836781755096
+  },
+  "random_ba_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.4655837081286222,
+    "std_rmse": 0.3488688070066976
+  },
+  "random_ba_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.2331848285021058,
+    "std_rmse": 0.11128788257460784
+  },
+  "random_ba_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.5898480254796338,
+    "std_rmse": 0.06573176220955557
+  },
+  "random_ba_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.09340662330026657,
+    "std_rmse": 0.0429861696216095
+  },
+  "random_ba_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.015984053524602353,
+    "std_rmse": 0.010257706125428933
+  },
+  "random_ba_Z32_N256_Persistence": {
+    "mean_rmse": 0.7429917609635067,
+    "std_rmse": 0.01884775108531095
+  },
+  "random_ba_Z32_N256_MeanField": {
+    "mean_rmse": 0.15721324328429587,
+    "std_rmse": 0.002607741132932475
+  },
+  "random_ba_Z32_N256_SpecLow": {
+    "mean_rmse": 0.11032574201700356,
+    "std_rmse": 0.033764092572548685
+  },
+  "random_ba_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.0936223956568654,
+    "std_rmse": 0.043756925255434044
+  },
+  "random_ba_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.48093223028526555,
+    "std_rmse": 0.014974438574853106
+  },
+  "random_ba_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.8938889103739582,
+    "std_rmse": 0.018754620048963482
+  },
+  "random_ba_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.02309157744152602,
+    "std_rmse": 0.005786609305331587
+  },
+  "random_ba_Z32_N512_Persistence": {
+    "mean_rmse": 0.6626359817364517,
+    "std_rmse": 0.03647411979866273
+  },
+  "random_ba_Z32_N512_MeanField": {
+    "mean_rmse": 0.17693667508798372,
+    "std_rmse": 0.015191570814758382
+  },
+  "random_ba_Z32_N512_SpecLow": {
+    "mean_rmse": 0.2336877392201698,
+    "std_rmse": 0.32865377415703245
+  },
+  "random_ba_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.12671644117972464,
+    "std_rmse": 0.04138498933335627
+  },
+  "random_ba_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.3555892983754171,
+    "std_rmse": 0.028370593770694286
+  },
+  "random_ba_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.749215869617448,
+    "std_rmse": 0.03576209769023591
+  },
+  "random_ba_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.029818183181104914,
+    "std_rmse": 0.007146070349277512
+  },
+  "random_ba_Z32_N1024_Persistence": {
+    "mean_rmse": 0.4873883239072101,
+    "std_rmse": 0.031196950469535467
+  },
+  "random_ba_Z32_N1024_MeanField": {
+    "mean_rmse": 0.13953216371873747,
+    "std_rmse": 0.01602353015507873
+  },
+  "random_ba_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.4135196522322427,
+    "std_rmse": 0.39571179697513853
+  },
+  "random_ba_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.2570282157595746,
+    "std_rmse": 0.152163364886554
+  },
+  "random_ba_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.4790886908551412,
+    "std_rmse": 0.025499487902607705
+  },
+  "random_ba_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.08981304742276842,
+    "std_rmse": 0.03371420715937506
+  },
+  "random_ba_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.018405214573267374,
+    "std_rmse": 0.006211249649643629
+  },
+  "random_ba_Z32_N2048_Persistence": {
+    "mean_rmse": 0.31244168571907366,
+    "std_rmse": 0.03412761978178096
+  },
+  "random_ba_Z32_N2048_MeanField": {
+    "mean_rmse": 0.09541277390565331,
+    "std_rmse": 0.018367533937952242
+  },
+  "random_ba_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.3097309455479757,
+    "std_rmse": 0.06649435015772141
+  },
+  "random_ba_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.25641724115996256,
+    "std_rmse": 0.0952084553229174
+  },
+  "random_ba_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.19338595275863096,
+    "std_rmse": 0.015344606960191878
+  },
+  "random_ba_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.15649504401188324,
+    "std_rmse": 0.02237210460988035
+  },
+  "random_ba_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.014151039456438561,
+    "std_rmse": 0.00776665030167039
+  },
+  "random_er_Z2_N1024_Persistence": {
+    "mean_rmse": 0.05322953516346668,
+    "std_rmse": 0.017297423416127323
+  },
+  "random_er_Z2_N1024_MeanField": {
+    "mean_rmse": 0.022198960931147246,
+    "std_rmse": 0.008570738376036929
+  },
+  "random_er_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.7539036736925141,
+    "std_rmse": 0.020115875128543518
+  },
+  "random_er_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.17434842950004165,
+    "std_rmse": 0.013450193547219939
+  },
+  "random_er_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.027478334632005143,
+    "std_rmse": 0.01024393292545739
+  },
+  "random_er_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.08188739618459469,
+    "std_rmse": 0.015876277849237185
+  },
+  "random_er_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.01690109824654651,
+    "std_rmse": 0.007535679903691065
+  },
+  "random_er_Z8_N256_Persistence": {
+    "mean_rmse": 0.4940584350270559,
+    "std_rmse": 0.02759016977761388
+  },
+  "random_er_Z8_N256_MeanField": {
+    "mean_rmse": 0.14249261305175323,
+    "std_rmse": 0.018092996263442008
+  },
+  "random_er_Z8_N256_SpecLow": {
+    "mean_rmse": 0.3749874720027804,
+    "std_rmse": 0.023005007267910566
+  },
+  "random_er_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.5803921261358955,
+    "std_rmse": 0.03328652302009585
+  },
+  "random_er_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.2508304856303908,
+    "std_rmse": 0.016107429948856573
+  },
+  "random_er_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.5517524808021971,
+    "std_rmse": 0.02582198554448128
+  },
+  "random_er_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.026788019115078793,
+    "std_rmse": 0.009174182287577862
+  },
+  "random_er_Z8_N512_Persistence": {
+    "mean_rmse": 0.31292686259080643,
+    "std_rmse": 0.022481117267691534
+  },
+  "random_er_Z8_N512_MeanField": {
+    "mean_rmse": 0.09183115310998015,
+    "std_rmse": 0.014896592062611446
+  },
+  "random_er_Z8_N512_SpecLow": {
+    "mean_rmse": 0.5311454476543118,
+    "std_rmse": 0.028088445820555752
+  },
+  "random_er_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.42290541041041907,
+    "std_rmse": 0.02226402477776556
+  },
+  "random_er_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.1554301075289271,
+    "std_rmse": 0.007168409270994282
+  },
+  "random_er_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.3524038776779709,
+    "std_rmse": 0.02474055669886771
+  },
+  "random_er_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.02220610991398413,
+    "std_rmse": 0.009880513187530852
+  },
+  "random_er_Z8_N1024_Persistence": {
+    "mean_rmse": 0.18528230471743856,
+    "std_rmse": 0.013846094863206433
+  },
+  "random_er_Z8_N1024_MeanField": {
+    "mean_rmse": 0.05460180100582209,
+    "std_rmse": 0.008392171183389781
+  },
+  "random_er_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.6358087198375266,
+    "std_rmse": 0.016807773695437747
+  },
+  "random_er_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.3001329671070096,
+    "std_rmse": 0.015414736710247203
+  },
+  "random_er_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.07697625722540866,
+    "std_rmse": 0.015651414487631757
+  },
+  "random_er_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.21774679152921106,
+    "std_rmse": 0.01624017719919606
+  },
+  "random_er_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.015630540726560855,
+    "std_rmse": 0.009170845620526946
+  },
+  "random_er_Z8_N2048_Persistence": {
+    "mean_rmse": 0.09111306563149332,
+    "std_rmse": 0.010254959389114337
+  },
+  "random_er_Z8_N2048_MeanField": {
+    "mean_rmse": 0.02789424985200914,
+    "std_rmse": 0.003995576857704752
+  },
+  "random_er_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.7114246048795229,
+    "std_rmse": 0.015928868391900507
+  },
+  "random_er_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.21168161165395144,
+    "std_rmse": 0.010966582394277575
+  },
+  "random_er_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.35441090941465664,
+    "std_rmse": 0.00915022058252115
+  },
+  "random_er_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.12011851965864331,
+    "std_rmse": 0.010020277799085459
+  },
+  "random_er_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.008931769592035352,
+    "std_rmse": 0.004225894834321195
+  },
+  "random_er_Z16_N1024_Persistence": {
+    "mean_rmse": 0.3265943554370142,
+    "std_rmse": 0.027993115482326882
+  },
+  "random_er_Z16_N1024_MeanField": {
+    "mean_rmse": 0.09855240270799523,
+    "std_rmse": 0.017890180818315452
+  },
+  "random_er_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.5064169839116309,
+    "std_rmse": 0.025740895472362045
+  },
+  "random_er_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.44143677063297915,
+    "std_rmse": 0.028983968206927793
+  },
+  "random_er_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.11503218229531671,
+    "std_rmse": 0.02676512086320345
+  },
+  "random_er_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.3615106645305847,
+    "std_rmse": 0.030136045203093063
+  },
+  "random_er_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.010701871620392059,
+    "std_rmse": 0.003265413844825353
+  },
+  "random_er_Z32_N256_Persistence": {
+    "mean_rmse": 0.750168907787664,
+    "std_rmse": 0.006942718056111305
+  },
+  "random_er_Z32_N256_MeanField": {
+    "mean_rmse": 0.15958649591965224,
+    "std_rmse": 0.0021254340837331947
+  },
+  "random_er_Z32_N256_SpecLow": {
+    "mean_rmse": 0.16254362289430863,
+    "std_rmse": 0.008948115578666694
+  },
+  "random_er_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.14101481287504075,
+    "std_rmse": 0.14332197230893143
+  },
+  "random_er_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.48620889660830213,
+    "std_rmse": 0.005537540803023215
+  },
+  "random_er_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.8988407288779436,
+    "std_rmse": 0.007364248653243896
+  },
+  "random_er_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.027573526504164635,
+    "std_rmse": 0.00678989962764052
+  },
+  "random_er_Z32_N512_Persistence": {
+    "mean_rmse": 0.6697440827932548,
+    "std_rmse": 0.014187987842358321
+  },
+  "random_er_Z32_N512_MeanField": {
+    "mean_rmse": 0.1744428771119431,
+    "std_rmse": 0.00788582105670167
+  },
+  "random_er_Z32_N512_SpecLow": {
+    "mean_rmse": 0.22980435277399652,
+    "std_rmse": 0.013136841073538356
+  },
+  "random_er_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.49770458622834796,
+    "std_rmse": 0.2683454612555333
+  },
+  "random_er_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.35913899541502753,
+    "std_rmse": 0.011643923271415625
+  },
+  "random_er_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.7532127660691352,
+    "std_rmse": 0.013492899092995966
+  },
+  "random_er_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.02685545015808314,
+    "std_rmse": 0.005246375716365328
+  },
+  "random_er_Z32_N1024_Persistence": {
+    "mean_rmse": 0.49881934078040685,
+    "std_rmse": 0.01921799968895029
+  },
+  "random_er_Z32_N1024_MeanField": {
+    "mean_rmse": 0.1450673212054016,
+    "std_rmse": 0.013613435640086453
+  },
+  "random_er_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.36600178763964236,
+    "std_rmse": 0.014438868369265414
+  },
+  "random_er_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.6075277452992374,
+    "std_rmse": 0.023847342741295244
+  },
+  "random_er_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.16998297298867476,
+    "std_rmse": 0.02150206423668955
+  },
+  "random_er_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.4974336835718963,
+    "std_rmse": 0.027159824782221464
+  },
+  "random_er_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.014212268574394426,
+    "std_rmse": 0.004947201842358934
+  },
+  "random_er_Z32_N2048_Persistence": {
+    "mean_rmse": 0.3103082317390254,
+    "std_rmse": 0.01299524957282886
+  },
+  "random_er_Z32_N2048_MeanField": {
+    "mean_rmse": 0.08957944896393696,
+    "std_rmse": 0.007578346600029663
+  },
+  "random_er_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.5229711432708071,
+    "std_rmse": 0.010853176950803671
+  },
+  "random_er_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.42898550809416125,
+    "std_rmse": 0.015478898713314574
+  },
+  "random_er_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.18940303267675335,
+    "std_rmse": 0.006137696185802624
+  },
+  "random_er_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.3504347702611015,
+    "std_rmse": 0.013673430448874669
+  },
+  "random_er_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.012152466366217963,
+    "std_rmse": 0.006114746647174215
+  },
+  "random_ws_Z2_N1024_Persistence": {
+    "mean_rmse": 0.03544126104713902,
+    "std_rmse": 0.009112590322530794
+  },
+  "random_ws_Z2_N1024_MeanField": {
+    "mean_rmse": 0.020719864145020674,
+    "std_rmse": 0.004830464349943025
+  },
+  "random_ws_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.7383728912947102,
+    "std_rmse": 0.007952927225231948
+  },
+  "random_ws_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.6436779792881598,
+    "std_rmse": 0.016174849923437228
+  },
+  "random_ws_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.06502773011798116,
+    "std_rmse": 0.008125339242699996
+  },
+  "random_ws_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.06252485622812523,
+    "std_rmse": 0.008352574423072622
+  },
+  "random_ws_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.014314676845149518,
+    "std_rmse": 0.005896201668650601
+  },
+  "random_ws_Z8_N256_Persistence": {
+    "mean_rmse": 0.46625870326547164,
+    "std_rmse": 0.031007235093795316
+  },
+  "random_ws_Z8_N256_MeanField": {
+    "mean_rmse": 0.12135886810062227,
+    "std_rmse": 0.015225874884696549
+  },
+  "random_ws_Z8_N256_SpecLow": {
+    "mean_rmse": 0.3623991510679173,
+    "std_rmse": 0.024208538144525525
+  },
+  "random_ws_Z8_N256_GlobalGAT": {
+    "mean_rmse": 0.26468431493227657,
+    "std_rmse": 0.03487913468045505
+  },
+  "random_ws_Z8_N256_SpectralLSTM": {
+    "mean_rmse": 0.23288091791054363,
+    "std_rmse": 0.016138831918587282
+  },
+  "random_ws_Z8_N256_PA-LSTM": {
+    "mean_rmse": 0.5228687392364352,
+    "std_rmse": 0.026622691533781336
+  },
+  "random_ws_Z8_N256_ZealotTransformer": {
+    "mean_rmse": 0.03081849865663176,
+    "std_rmse": 0.011550404217784187
+  },
+  "random_ws_Z8_N512_Persistence": {
+    "mean_rmse": 0.28896636242921026,
+    "std_rmse": 0.021983312847092793
+  },
+  "random_ws_Z8_N512_MeanField": {
+    "mean_rmse": 0.07566293807865172,
+    "std_rmse": 0.008525646411770985
+  },
+  "random_ws_Z8_N512_SpecLow": {
+    "mean_rmse": 0.506429138569101,
+    "std_rmse": 0.02305567851764104
+  },
+  "random_ws_Z8_N512_GlobalGAT": {
+    "mean_rmse": 0.3967758805300726,
+    "std_rmse": 0.025961151099027316
+  },
+  "random_ws_Z8_N512_SpectralLSTM": {
+    "mean_rmse": 0.14459495791246083,
+    "std_rmse": 0.003228388024008102
+  },
+  "random_ws_Z8_N512_PA-LSTM": {
+    "mean_rmse": 0.32766466527698385,
+    "std_rmse": 0.022070907949171766
+  },
+  "random_ws_Z8_N512_ZealotTransformer": {
+    "mean_rmse": 0.028712347488509,
+    "std_rmse": 0.020790119719306274
+  },
+  "random_ws_Z8_N1024_Persistence": {
+    "mean_rmse": 0.16074993937495932,
+    "std_rmse": 0.011872459468819018
+  },
+  "random_ws_Z8_N1024_MeanField": {
+    "mean_rmse": 0.042349683425613315,
+    "std_rmse": 0.0035284550694268785
+  },
+  "random_ws_Z8_N1024_SpecLow": {
+    "mean_rmse": 0.6261220245197251,
+    "std_rmse": 0.017350782758280187
+  },
+  "random_ws_Z8_N1024_GlobalGAT": {
+    "mean_rmse": 0.5047298446728922,
+    "std_rmse": 0.022718386860888957
+  },
+  "random_ws_Z8_N1024_SpectralLSTM": {
+    "mean_rmse": 0.022669031459118454,
+    "std_rmse": 0.005286404466531813
+  },
+  "random_ws_Z8_N1024_PA-LSTM": {
+    "mean_rmse": 0.19412589320240367,
+    "std_rmse": 0.012747737023679854
+  },
+  "random_ws_Z8_N1024_ZealotTransformer": {
+    "mean_rmse": 0.013386580831200104,
+    "std_rmse": 0.006262996353024286
+  },
+  "random_ws_Z8_N2048_Persistence": {
+    "mean_rmse": 0.08962761949725757,
+    "std_rmse": 0.009114964053501535
+  },
+  "random_ws_Z8_N2048_MeanField": {
+    "mean_rmse": 0.023304418986439628,
+    "std_rmse": 0.005559464451247691
+  },
+  "random_ws_Z8_N2048_SpecLow": {
+    "mean_rmse": 0.6860977465639333,
+    "std_rmse": 0.01074980030926553
+  },
+  "random_ws_Z8_N2048_GlobalGAT": {
+    "mean_rmse": 0.5817010806071627,
+    "std_rmse": 0.012771199404611504
+  },
+  "random_ws_Z8_N2048_SpectralLSTM": {
+    "mean_rmse": 0.3549100775481835,
+    "std_rmse": 0.007589246984396843
+  },
+  "random_ws_Z8_N2048_PA-LSTM": {
+    "mean_rmse": 0.11897423972427072,
+    "std_rmse": 0.00850907180386446
+  },
+  "random_ws_Z8_N2048_ZealotTransformer": {
+    "mean_rmse": 0.01162782170151093,
+    "std_rmse": 0.0039966117322960135
+  },
+  "random_ws_Z16_N1024_Persistence": {
+    "mean_rmse": 0.2874584490216262,
+    "std_rmse": 0.012371556848090595
+  },
+  "random_ws_Z16_N1024_MeanField": {
+    "mean_rmse": 0.07492106463344408,
+    "std_rmse": 0.005237617735791625
+  },
+  "random_ws_Z16_N1024_SpecLow": {
+    "mean_rmse": 0.5153255446744919,
+    "std_rmse": 0.010889559636702864
+  },
+  "random_ws_Z16_N1024_GlobalGAT": {
+    "mean_rmse": 0.40563754498641036,
+    "std_rmse": 0.017325529104438755
+  },
+  "random_ws_Z16_N1024_SpectralLSTM": {
+    "mean_rmse": 0.06586295453066413,
+    "std_rmse": 0.01028564366561826
+  },
+  "random_ws_Z16_N1024_PA-LSTM": {
+    "mean_rmse": 0.32577118149704976,
+    "std_rmse": 0.012709633631149552
+  },
+  "random_ws_Z16_N1024_ZealotTransformer": {
+    "mean_rmse": 0.02816874897365263,
+    "std_rmse": 0.013934690228374635
+  },
+  "random_ws_Z32_N256_Persistence": {
+    "mean_rmse": 0.7359650838367615,
+    "std_rmse": 0.010885895011717316
+  },
+  "random_ws_Z32_N256_MeanField": {
+    "mean_rmse": 0.15090273154324657,
+    "std_rmse": 0.003802736366827752
+  },
+  "random_ws_Z32_N256_SpecLow": {
+    "mean_rmse": 0.16654522947599726,
+    "std_rmse": 0.011803228237681073
+  },
+  "random_ws_Z32_N256_GlobalGAT": {
+    "mean_rmse": 0.14287529932331505,
+    "std_rmse": 0.019909298213881235
+  },
+  "random_ws_Z32_N256_SpectralLSTM": {
+    "mean_rmse": 0.47309177948660813,
+    "std_rmse": 0.007503568642087061
+  },
+  "random_ws_Z32_N256_PA-LSTM": {
+    "mean_rmse": 0.8852866050344048,
+    "std_rmse": 0.00815560598757576
+  },
+  "random_ws_Z32_N256_ZealotTransformer": {
+    "mean_rmse": 0.0342954460350032,
+    "std_rmse": 0.008862025136200373
+  },
+  "random_ws_Z32_N512_Persistence": {
+    "mean_rmse": 0.6510864250208956,
+    "std_rmse": 0.015916668046731062
+  },
+  "random_ws_Z32_N512_MeanField": {
+    "mean_rmse": 0.16392191521008267,
+    "std_rmse": 0.00891527555372605
+  },
+  "random_ws_Z32_N512_SpecLow": {
+    "mean_rmse": 0.2269227058494347,
+    "std_rmse": 0.011696592165073672
+  },
+  "random_ws_Z32_N512_GlobalGAT": {
+    "mean_rmse": 0.15849426340210826,
+    "std_rmse": 0.018629850531825785
+  },
+  "random_ws_Z32_N512_SpectralLSTM": {
+    "mean_rmse": 0.3448473651091155,
+    "std_rmse": 0.01267257134513025
+  },
+  "random_ws_Z32_N512_PA-LSTM": {
+    "mean_rmse": 0.7378571881909373,
+    "std_rmse": 0.013891167260435471
+  },
+  "random_ws_Z32_N512_ZealotTransformer": {
+    "mean_rmse": 0.0730498450659068,
+    "std_rmse": 0.013686720621223105
+  },
+  "random_ws_Z32_N1024_Persistence": {
+    "mean_rmse": 0.45241375458510635,
+    "std_rmse": 0.01258318991049252
+  },
+  "random_ws_Z32_N1024_MeanField": {
+    "mean_rmse": 0.11599470779044832,
+    "std_rmse": 0.007551112438573588
+  },
+  "random_ws_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.36904057909924515,
+    "std_rmse": 0.014354490598046592
+  },
+  "random_ws_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.26182727221550706,
+    "std_rmse": 0.01874490231961801
+  },
+  "random_ws_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.21856625601734367,
+    "std_rmse": 0.012374390708865998
+  },
+  "random_ws_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.507606996737274,
+    "std_rmse": 0.01303495998092585
+  },
+  "random_ws_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.015582830043311503,
+    "std_rmse": 0.007789288330397215
+  },
+  "random_ws_Z32_N2048_Persistence": {
+    "mean_rmse": 0.2843049800304157,
+    "std_rmse": 0.008041248133344264
+  },
+  "random_ws_Z32_N2048_MeanField": {
+    "mean_rmse": 0.07232758805980916,
+    "std_rmse": 0.0032018191249542464
+  },
+  "random_ws_Z32_N2048_SpecLow": {
+    "mean_rmse": 0.5121081881364875,
+    "std_rmse": 0.009746836857415276
+  },
+  "random_ws_Z32_N2048_GlobalGAT": {
+    "mean_rmse": 0.39757918651822316,
+    "std_rmse": 0.012082352346840415
+  },
+  "random_ws_Z32_N2048_SpectralLSTM": {
+    "mean_rmse": 0.19599943080215118,
+    "std_rmse": 0.00509343833959935
+  },
+  "random_ws_Z32_N2048_PA-LSTM": {
+    "mean_rmse": 0.32587433138749733,
+    "std_rmse": 0.00829612740600494
+  },
+  "random_ws_Z32_N2048_ZealotTransformer": {
+    "mean_rmse": 0.02822593610574923,
+    "std_rmse": 0.007730054350307834
+  }
+}

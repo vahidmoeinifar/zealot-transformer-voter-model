@@ -1,0 +1,170 @@
+{
+  "hub_ba_Z64_N4096_Persistence": {
+    "mean_rmse": 0.8434217036906141,
+    "std_rmse": 0.0030098369625578534
+  },
+  "hub_ba_Z64_N4096_MeanField": {
+    "mean_rmse": 0.5742462137198877,
+    "std_rmse": 0.0031398252512443627
+  },
+  "hub_ba_Z64_N4096_SpecLow": {
+    "mean_rmse": 0.08717853031232814,
+    "std_rmse": 0.004111236063425374
+  },
+  "hub_ba_Z64_N4096_GlobalGAT": {
+    "mean_rmse": 0.054352398008190375,
+    "std_rmse": 0.01665429293105099
+  },
+  "hub_ba_Z64_N4096_SpectralLSTM": {
+    "mean_rmse": 0.4527232539622338,
+    "std_rmse": 0.0025942731614697636
+  },
+  "hub_ba_Z64_N4096_PA-LSTM": {
+    "mean_rmse": 0.17906693397083367,
+    "std_rmse": 0.012657288036420132
+  },
+  "hub_ba_Z64_N4096_ZealotTransformer": {
+    "mean_rmse": 0.035720129301761744,
+    "std_rmse": 0.00450518219766102
+  },
+  "hub_ba_Z64_N8192_Persistence": {
+    "mean_rmse": 0.7852333630094828,
+    "std_rmse": 0.006057054706833881
+  },
+  "hub_ba_Z64_N8192_MeanField": {
+    "mean_rmse": 0.6290791386278554,
+    "std_rmse": 0.005578042593815202
+  },
+  "hub_ba_Z64_N8192_SpecLow": {
+    "mean_rmse": 0.07405626408026646,
+    "std_rmse": 0.002676220448919185
+  },
+  "hub_ba_Z64_N8192_GlobalGAT": {
+    "mean_rmse": 0.11189109819630642,
+    "std_rmse": 0.0187210738018116
+  },
+  "hub_ba_Z64_N8192_SpectralLSTM": {
+    "mean_rmse": 0.40394726252673463,
+    "std_rmse": 0.004602225946864837
+  },
+  "hub_ba_Z64_N8192_PA-LSTM": {
+    "mean_rmse": 0.2862478856449157,
+    "std_rmse": 0.006354403560445855
+  },
+  "hub_ba_Z64_N8192_ZealotTransformer": {
+    "mean_rmse": 0.08558126654824691,
+    "std_rmse": 0.012188057141315678
+  },
+  "hub_ba_Z128_N4096_Persistence": {
+    "mean_rmse": 0.8766286441461402,
+    "std_rmse": 0.003548318085476959
+  },
+  "hub_ba_Z128_N4096_MeanField": {
+    "mean_rmse": 0.461541508814316,
+    "std_rmse": 0.0013098697990341856
+  },
+  "hub_ba_Z128_N4096_SpecLow": {
+    "mean_rmse": 0.0973300851579639,
+    "std_rmse": 0.0012125942459143399
+  },
+  "hub_ba_Z128_N4096_GlobalGAT": {
+    "mean_rmse": 0.04451358082910501,
+    "std_rmse": 0.007332162167757423
+  },
+  "hub_ba_Z128_N4096_SpectralLSTM": {
+    "mean_rmse": 0.4911723166122214,
+    "std_rmse": 0.0010309895330284698
+  },
+  "hub_ba_Z128_N4096_PA-LSTM": {
+    "mean_rmse": 0.13177165167550234,
+    "std_rmse": 0.005031009461681437
+  },
+  "hub_ba_Z128_N4096_ZealotTransformer": {
+    "mean_rmse": 0.031970805084309176,
+    "std_rmse": 0.0037372980310785247
+  },
+  "hub_ba_Z128_N8192_Persistence": {
+    "mean_rmse": 0.8480384418576301,
+    "std_rmse": 0.00399019802394169
+  },
+  "hub_ba_Z128_N8192_MeanField": {
+    "mean_rmse": 0.5795076210478991,
+    "std_rmse": 0.003154421601499162
+  },
+  "hub_ba_Z128_N8192_SpecLow": {
+    "mean_rmse": 0.08738208674851877,
+    "std_rmse": 0.0025363178538140457
+  },
+  "hub_ba_Z128_N8192_GlobalGAT": {
+    "mean_rmse": 0.07885706904479398,
+    "std_rmse": 0.017780036255592248
+  },
+  "hub_ba_Z128_N8192_SpectralLSTM": {
+    "mean_rmse": 0.4602707661224404,
+    "std_rmse": 0.002511413706471134
+  },
+  "hub_ba_Z128_N8192_PA-LSTM": {
+    "mean_rmse": 0.21214659368094163,
+    "std_rmse": 0.004907702661416915
+  },
+  "hub_ba_Z128_N8192_ZealotTransformer": {
+    "mean_rmse": 0.0620355590519678,
+    "std_rmse": 0.006390003965712482
+  },
+  "hub_rgg_Z2_N1024_Persistence": {
+    "mean_rmse": 0.06460592078433548,
+    "std_rmse": 0.03237680135563634
+  },
+  "hub_rgg_Z2_N1024_MeanField": {
+    "mean_rmse": 0.03373580408783912,
+    "std_rmse": 0.01839545261593722
+  },
+  "hub_rgg_Z2_N1024_SpecLow": {
+    "mean_rmse": 0.5310292325200132,
+    "std_rmse": 0.07275006947930081
+  },
+  "hub_rgg_Z2_N1024_GlobalGAT": {
+    "mean_rmse": 0.5244840800666852,
+    "std_rmse": 0.029564076797614747
+  },
+  "hub_rgg_Z2_N1024_SpectralLSTM": {
+    "mean_rmse": 0.19540194015921006,
+    "std_rmse": 0.043747913709358106
+  },
+  "hub_rgg_Z2_N1024_PA-LSTM": {
+    "mean_rmse": 0.09115836308776845,
+    "std_rmse": 0.030119391881585193
+  },
+  "hub_rgg_Z2_N1024_ZealotTransformer": {
+    "mean_rmse": 0.03521696031790576,
+    "std_rmse": 0.019999811710895272
+  },
+  "hub_rgg_Z32_N1024_Persistence": {
+    "mean_rmse": 0.3165611539043456,
+    "std_rmse": 0.08351044254207941
+  },
+  "hub_rgg_Z32_N1024_MeanField": {
+    "mean_rmse": 0.14011821835730282,
+    "std_rmse": 0.05486625011947382
+  },
+  "hub_rgg_Z32_N1024_SpecLow": {
+    "mean_rmse": 0.20319945264410905,
+    "std_rmse": 0.07193605984300556
+  },
+  "hub_rgg_Z32_N1024_GlobalGAT": {
+    "mean_rmse": 0.3069909384818766,
+    "std_rmse": 0.05970100933758411
+  },
+  "hub_rgg_Z32_N1024_SpectralLSTM": {
+    "mean_rmse": 0.39193595642586465,
+    "std_rmse": 0.09072170622115175
+  },
+  "hub_rgg_Z32_N1024_PA-LSTM": {
+    "mean_rmse": 0.3709610556448518,
+    "std_rmse": 0.08470900439446444
+  },
+  "hub_rgg_Z32_N1024_ZealotTransformer": {
+    "mean_rmse": 0.24282238404386405,
+    "std_rmse": 0.11172740048662469
+  }
+}

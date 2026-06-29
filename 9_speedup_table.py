@@ -2,6 +2,24 @@
 speedup.py
 ==========
 Wall-clock speedup of ZealotTransformer inference vs Monte Carlo simulation.
+
+Matches the methodology of the paper:
+  - MC runs on single-threaded CPU  (OMP_NUM_THREADS=1)
+  - ZealotTransformer measured on both GPU and CPU
+  - Median of 5 timing repeats per configuration
+  - Configurations: N ∈ {256, 512, 1024, 2048, 4096}  ×  Z ∈ {8, 32}
+                    topology ∈ {ba, er, ws}  (N=1024, Z=8)
+  - T=50 time steps, 20 MC runs per ground-truth estimate
+
+Outputs
+-------
+  speedup_results.json       raw timing + speedup numbers
+  speedup_chart.pdf / .png   bar chart (Scientific Reports style, no title)
+  speedup_table.txt          plain-text table for paper
+
+Usage
+-----
+  python speedup.py --zt_checkpoint saved_models/zealot_transformer.pt
 """
 
 import os, json, time, argparse, warnings
@@ -141,7 +159,7 @@ class ZealotTransformer(nn.Module):
 
 
 def load_model(path, device):
-    ckpt = torch.load(path, map_location=device, weights_only=False)
+    ckpt = torch.load(path, map_location=device)
     hp   = ckpt.get("hyperparams", {})
     m    = ZealotTransformer(
         node_feat_dim=hp.get("node_feat_dim", NODE_FEAT_DIM),

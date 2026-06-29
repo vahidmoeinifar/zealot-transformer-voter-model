@@ -1,6 +1,28 @@
 """
 train_baselines.py  —  Train and save baseline models
 ======================================================
+Trains / fits the two non-neural baselines once and saves them to
+saved_models/ so compare_models_extended.py can reload them without
+rebuilding every run.
+
+Saves:
+  saved_models/baseline_mlp.pt      — MLP-Descriptor checkpoint
+  saved_models/baseline_mf.json     — Mean-Field ODE parameters
+
+Both files embed the norm_stats used during training so the eval
+script uses exactly the same normalisation.
+
+Setup is intentionally identical to compare_models_extended.py:
+  - Same graph topologies (BA/ER/WS), same Z values, same N, same m
+  - Same zealot placement (hubs)
+  - Same MC settings (mc_runs=20, T=50)
+  - norm_stats computed from this training set
+  - If universal_lstm.pt exists, its embedded norm_stats are used
+    instead (keeps everything aligned with the LSTM's training pipeline)
+
+Usage:
+  python train_baselines.py
+  python train_baselines.py --n-graphs 100 --mc-runs 30 --epochs 400
 
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """
@@ -17,7 +39,7 @@ from scipy.sparse.linalg import eigsh
 os.makedirs("saved_models", exist_ok=True)
 os.makedirs("result",       exist_ok=True)
 
-# ── Must match compare script exactly ─────────────
+# ── Must match compare_models_extended.py exactly ─────────────
 T_STEPS    = 50
 N          = 1024
 M_PARAM    = 8

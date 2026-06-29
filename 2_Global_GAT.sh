@@ -3,6 +3,9 @@
 #  LUMI Supercomputer — SLURM Batch Script (GPU / ROCm)
 #  Job: Global GAT (no conditioning) Training
 #  Author: Vahid Moeinifar (AGH University of Science and Technology)
+#
+#  Reuses pyg-wrapper + pyg-packages from the FiLM training setup.
+#  No reinstallation needed — just sbatch this file.
 # =============================================================================
 
 #SBATCH --job-name=global_gat_gpu

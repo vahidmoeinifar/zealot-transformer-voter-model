@@ -1,6 +1,17 @@
 """
 ZealotTransformer — Enhanced Training with Multi-Metric Validation
-Author: Vahid Moeinifar (AGH University of Science and Technology)
+==================================================================
+Saves checkpoints every N epochs for manual convergence checking.
+Reports validation RMSE on:
+  - BA / hub placement (training distribution)
+  - BA / random placement
+  - ER / hub placement
+  - WS / hub placement
+
+This allows you to:
+  1. Stop training when RMSE stabilizes
+  2. Record the exact epoch you stopped
+  3. Track generalization during training
 """
 
 import os, random, argparse, time, json
@@ -29,9 +40,7 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
 ALL_Z        = [2, 8, 16, 32]
-#TRAIN_N_LIST = [256, 512, 1024, 2048]
-TRAIN_N_LIST = [1024]
-
+TRAIN_N_LIST = [256, 512, 1024, 2048]
 TOPOLOGIES   = ['ba', 'er', 'ws']
 T_STEPS      = 50
 MC_RUNS      = 20

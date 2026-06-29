@@ -3,6 +3,23 @@ convergence_speed.py
 ====================
 Plots and analyses convergence speed of ZealotTransformer across topologies
 and zealot counts.
+
+Two complementary analyses:
+
+  1. Training convergence  (from training_log.json)
+     - Validation RMSE vs epoch for all tracked configurations
+     - Saved as: convergence_training.pdf / .png
+
+  2. Opinion-dynamics convergence  (MC simulation + ZealotTransformer prediction)
+     - First time step t where predicted/true m(t) >= threshold (default 0.80)
+     - Plotted as t_consensus vs Z for BA / ER / WS
+     - Saved as: convergence_speed.pdf / .png  (matches paper Fig style)
+     - Also saves: convergence_speed.json
+
+Usage
+-----
+  python convergence_speed.py --zt_checkpoint saved_models/zealot_transformer.pt
+  python convergence_speed.py --zt_checkpoint ... --log_path saved_models/training_log.json
 """
 
 import os, json, argparse, warnings
@@ -31,8 +48,8 @@ FIG_W_IN  = 180 / 25.4
 
 TOPO_STYLE = {
     "ba": {"color": "#1B3A5C", "marker": "o", "ls": "-",  "label": "BA"},
-    "er": {"color": "#0D9488", "marker": "o", "ls": "-", "label": "ER"},
-    "ws": {"color": "#F59E0B", "marker": "o", "ls": "-",  "label": "WS"},
+    "er": {"color": "#0D9488", "marker": "s", "ls": "--", "label": "ER"},
+    "ws": {"color": "#F59E0B", "marker": "^", "ls": ":",  "label": "WS"},
 }
 
 # ── graph / feature helpers ───────────────────────────────────────────────────
@@ -168,7 +185,7 @@ class ZealotTransformer(nn.Module):
 
 
 def load_model(path, device):
-    ckpt = torch.load(path, map_location=device, weights_only=False)
+    ckpt = torch.load(path, map_location=device)
     hp   = ckpt.get("hyperparams", {})
     m    = ZealotTransformer(
         node_feat_dim=hp.get("node_feat_dim", NODE_FEAT_DIM),

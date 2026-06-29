@@ -3,6 +3,31 @@ attention_analysis.py
 =====================
 Extracts and analyses the self-attention patterns of ZealotTransformer's
 Transformer encoder across BA network densities.
+
+What it measures
+----------------
+  For each graph instance the script:
+    1. Runs a forward pass with attention-weight hooks registered on every
+       TransformerEncoderLayer.
+    2. Averages attention weights across heads → per-node "received attention"
+       (how much other nodes attend to node i).
+    3. Correlates received attention with:
+         - Node degree
+         - Betweenness centrality
+    4. Aggregates Pearson r and Spearman ρ across graphs.
+
+This directly replicates the bridge-to-hub transition analysis from the
+SpectralLSTM paper, now applied to ZealotTransformer.
+
+Outputs
+-------
+  attention_vs_degree.pdf / .png    heatmap + scatter: attention vs degree
+  attention_correlations.pdf / .png Pearson/Spearman vs m (density) per layer
+  attention_analysis.json           raw correlation numbers
+
+Usage
+-----
+  python attention_analysis.py --zt_checkpoint saved_models/zealot_transformer.pt
 """
 
 import os, json, argparse, warnings
@@ -130,8 +155,7 @@ class ZealotTransformer(nn.Module):
 
 
 def load_model(path, device):
-    # weights_only=False required: checkpoints contain numpy scalars (PyTorch 2.6)
-    ckpt = torch.load(path, map_location=device, weights_only=False)
+    ckpt = torch.load(path, map_location=device)
     hp   = ckpt.get("hyperparams", {})
     m    = ZealotTransformer(
         node_feat_dim=hp.get("node_feat_dim", NODE_FEAT_DIM),
@@ -146,119 +170,83 @@ def load_model(path, device):
 
 # ── attention extraction ──────────────────────────────────────────────────────
 
-def extract_attention_weights(model, X_t, device):
+def extract_attention_weights(model, X_t, zm_t, device):
     """
-    Extracts head-averaged self-attention weight matrices (N×N) from every
-    TransformerEncoderLayer.
+    Registers forward hooks on every TransformerEncoderLayer's self-attention
+    module to capture the raw attention weight matrices.
 
-    WHY THIS APPROACH
-    -----------------
-    PyTorch 2.6 on ROCm (AMD MI250X) uses a fused C++ / HIP kernel for
-    TransformerEncoderLayer when norm_first=True and batch_first=True in eval
-    mode.  This kernel NEVER calls self_attn.forward as a Python function, so:
-      - register_forward_hook on self_attn → captures nothing
-      - monkey-patching self_attn.forward → never invoked
-    Both previous approaches failed for exactly this reason.
+    Returns list of np.arrays, one per layer, shape (N, N) after head-averaging.
+    PyTorch's nn.MultiheadAttention stores weights in attn_output_weights when
+    need_weights=True (the default in TransformerEncoderLayer).
 
-    The only reliable solution is to bypass model.transformer entirely and
-    reimplement each layer's forward pass in pure Python, calling
-    F.multi_head_attention_forward with need_weights=True directly on the
-    layer's weight tensors.  The computation is mathematically identical to
-    what the model does during inference — we just make the attention weights
-    visible as a Python tensor.
-
-    The function returns a list of (N, N) numpy arrays — one per encoder layer
-    — where entry [i, j] is the average (across heads) attention weight from
-    query node i to key node j.
+    Because TransformerEncoderLayer calls F.multi_head_attention_forward internally
+    we hook the self_attn submodule's forward output.
     """
-    import torch.nn.functional as F
-
     captured = []
+    hooks    = []
+
+    def make_hook(layer_idx):
+        def hook(module, input, output):
+            # output of MultiheadAttention is (attn_output, attn_weights)
+            # attn_weights shape: (B, N, N)  — already averaged over heads
+            # when average_attn_weights=True (default in PyTorch ≥ 1.12)
+            if isinstance(output, tuple) and len(output) == 2:
+                w = output[1]   # (B, N, N)
+                if w is not None:
+                    captured.append(w.squeeze(0).detach().cpu().numpy())
+        return hook
+
+    for i, layer in enumerate(model.transformer.layers):
+        # Patch: enable weight return
+        layer.self_attn.need_weights = True
+        try:
+            layer.self_attn.average_attn_weights = True
+        except AttributeError:
+            pass
+        h = layer.self_attn.register_forward_hook(make_hook(i))
+        hooks.append(h)
 
     with torch.no_grad():
-        # (1) Node encoder: same as model.node_encoder
-        # X_t is (N, feat_dim) — add batch dim → (1, N, feat_dim)
-        H = model.node_encoder(X_t.unsqueeze(0))   # (1, N, d_model)
+        pm  = torch.ones(1, X_t.shape[0], dtype=torch.bool, device=device)
+        H   = model.node_encoder(X_t.unsqueeze(0))
+        model.transformer(H, src_key_padding_mask=~pm)   # triggers hooks
 
-        # (2) Manual encoder loop — never touches model.transformer
-        src = H
-        for layer in model.transformer.layers:
-            sa   = layer.self_attn          # nn.MultiheadAttention
-            N_sq = src.shape[1]             # number of nodes
-
-            # norm_first=True: LayerNorm BEFORE attention
-            src_norm = layer.norm1(src)     # (1, N, d_model)
-
-            # Reshape to (N, 1, d_model) — F.multi_head_attention_forward
-            # expects (seq_len, batch, embed_dim) when batch_first=False,
-            # but we can also pass (1, N, d_model) with batch_first semantics
-            # by using the transposed form.  We use the explicit weight call
-            # so batch dimension placement doesn't matter.
-            q = src_norm.squeeze(0)   # (N, d_model)
-            k = q
-            v = q
-
-            # Call the functional API directly — bypasses ALL fast-paths
-            _, attn_w = F.multi_head_attention_forward(
-                query=q, key=k, value=v,
-                embed_dim_to_check=sa.embed_dim,
-                num_heads=sa.num_heads,
-                in_proj_weight=sa.in_proj_weight,
-                in_proj_bias=sa.in_proj_bias,
-                bias_k=sa.bias_k,
-                bias_v=sa.bias_v,
-                add_zero_attn=sa.add_zero_attn,
-                dropout_p=0.0,
-                out_proj_weight=sa.out_proj.weight,
-                out_proj_bias=sa.out_proj.bias,
-                training=False,
-                key_padding_mask=None,
-                need_weights=True,          # ← the whole point
-                attn_mask=None,
-                average_attn_weights=True,  # head-average → (N, N)
-            )
-            # attn_w: (N, N)
-            captured.append(attn_w.detach().cpu().numpy())
-
-            # Continue the forward pass so subsequent layers get correct input.
-            # We use the actual layer forward (which may use the fast-path for
-            # the hidden state update — that's fine, we already have attn_w).
-            src = layer(src, src_key_padding_mask=None)
-
-    return captured   # list[ (N, N) ] — one per encoder layer
+    for h in hooks: h.remove()
+    return captured   # list[ (N,N) ] per layer
 
 
 def received_attention(attn_matrix):
     """
-    Column-sum of attention matrix → how much attention each node receives.
-    attn_matrix: (N, N) where [i, j] = attention from query i to key j.
-    Summing over i gives total attention received by each key node j.
+    Column-sum of attention matrix → how much each node is attended to.
+    attn_matrix: (N, N) where [i,j] = attention from node i to node j.
     Returns (N,) vector.
     """
-    return attn_matrix.sum(axis=0)
+    return attn_matrix.sum(axis=0)   # sum over query dimension
 
 
 # ── correlation analysis ──────────────────────────────────────────────────────
 
-def analyse_graph(model, G, zealot_set, device):
+def analyse_graph(model, G, zealot_set, device, n=1024):
     """
     Returns dict with arrays:
-      degree, betweenness, received_attn  (list, one (N,) array per layer)
+      degree, betweenness, received_attn_per_layer
     """
-    N_g  = G.number_of_nodes()
     X    = compute_node_features(G, zealot_set)
     X_t  = torch.tensor(X, dtype=torch.float32).to(device)
+    zm_t = torch.tensor(
+        [1.0 if nd in zealot_set else 0.0 for nd in range(n)],
+        dtype=torch.bool).to(device)
 
-    attn_list = extract_attention_weights(model, X_t, device)
+    attn_list = extract_attention_weights(model, X_t, zm_t, device)
 
     deg  = np.array([d for _, d in G.degree()], dtype=np.float64)
     try:
         btwn_d = nx.betweenness_centrality(G, normalized=True)
-        btwn   = np.array([btwn_d[i] for i in range(N_g)], dtype=np.float64)
+        btwn   = np.array([btwn_d[i] for i in range(n)], dtype=np.float64)
     except Exception:
-        btwn = np.zeros(N_g, dtype=np.float64)
+        btwn = np.zeros(n, dtype=np.float64)
 
-    recv = [received_attention(a) for a in attn_list]
+    recv = [received_attention(a) for a in attn_list]   # one per layer
 
     return {"degree": deg, "betweenness": btwn, "received_attn": recv}
 
@@ -463,7 +451,7 @@ def main():
             try:
                 G  = make_ba_graph(args.n, m_val, seed=seed)
                 zs = place_hubs(G, args.z_fixed)
-                r  = analyse_graph(model, G, zs, device)
+                r  = analyse_graph(model, G, zs, device, args.n)
                 records.append(r)
 
                 for li in range(n_layers):

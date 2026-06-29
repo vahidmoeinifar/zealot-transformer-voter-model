@@ -3,10 +3,6 @@ __pycache__/
 *.pyc
 *.pyo
 
-# PyTorch models (too large)
-*.pth
-*.pt
-*.pkl
 
 # LUMI specific
 pyg-wrapper/
@@ -20,9 +16,6 @@ gpucore*
 *.core
 
 # Results (can be regenerated)
-saved_models/
-result/
-comparison_results/
 pyg-wrapper/
 pyg-packages/
 logs/
