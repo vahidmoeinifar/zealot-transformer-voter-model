@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-compare_models.py — LUMI version
+compare_models.py
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """
 

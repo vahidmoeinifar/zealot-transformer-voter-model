@@ -17,9 +17,6 @@ Outputs
   speedup_chart.pdf / .png   bar chart (Scientific Reports style, no title)
   speedup_table.txt          plain-text table for paper
 
-Usage
------
-  python speedup.py --zt_checkpoint saved_models/zealot_transformer.pt
 """
 
 import os, json, time, argparse, warnings
@@ -239,10 +236,7 @@ def time_zt(model, G, zealot_set, device, n_repeats):
 # ── plot ──────────────────────────────────────────────────────────────────────
 
 def plot_speedup(records, out_dir):
-    """
-    Grouped bar chart: CPU speedup and GPU speedup per configuration.
-    No figure title (Scientific Reports style).
-    """
+
     plt.rcParams.update({
         "font.family": "sans-serif",
         "font.sans-serif": ["Arial","Helvetica","DejaVu Sans"],

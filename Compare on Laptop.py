@@ -19,15 +19,15 @@ tables/
   table_topology_er_random.txt
   table_topology_ws_hub.txt
   table_topology_ws_random.txt
-  table_placement_ba.txt         ← Table 2: BA, hub vs random, per model & Z
+  table_placement_ba.txt
   table_placement_er.txt
   table_placement_ws.txt
-  table_size_ba_hub.txt          ← Table 3: BA/hub, N∈{256,512,1024,2048,4096}
+  table_size_ba_hub.txt
   table_size_er_hub.txt
   table_size_ws_hub.txt
 
 figures/
-  ba_trajectories_gt_vs_zt.pdf   ← BA trajectory plot (Scientific Reports style)
+  ba_trajectories_gt_vs_zt.pdf
   ba_trajectories_gt_vs_zt.png
 
 trajectories/
@@ -54,7 +54,7 @@ warnings.filterwarnings("ignore")
 # Constants
 # ─────────────────────────────────────────────────────────────────────────────
 ALL_Z         = [2, 8, 16, 32]
-SIZE_LIST     = [256, 512, 1024, 2048, 4096]   # for Table 3
+SIZE_LIST     = [256, 512, 1024, 2048, 4096]
 T_STEPS       = 50
 NODE_FEAT_DIM = 5
 TOPOLOGIES    = ["ba", "er", "ws"]
@@ -63,7 +63,7 @@ PLACEMENTS    = ["hub", "random"]
 # Scientific Reports figure style
 PANEL_FONT  = 8;  AXIS_FONT = 8;  TICK_FONT = 7;  LEGEND_FONT = 7
 LINE_WIDTH  = 1.2
-FIG_W_IN    = 180 / 25.4   # 180 mm full-width
+FIG_W_IN    = 180 / 25.4
 
 MODEL_ORDER = [
     "Persistence", "Mean-Field ODE", "MLP-Descriptor",

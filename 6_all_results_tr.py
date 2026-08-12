@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 """
-eval_small_graphs.py — Evaluation for N ≤ 2048 (trained distribution)
-=======================================================================
-Covers:
-  - Table 1: BA/ER/WS × Z∈{2,8,16,32}, hub placement, N=1024
-  - Table 2: BA, Hub/Random/Bridge × Z∈{2,8,16,32}, N=1024
-  - Table 3: Size generalization N∈{256,512,1024,2048}, hub, Z=8
-  - Supplement A: Full Z grid, all topologies, hub, N=1024
-  - Supplement B: All placements × all topologies, Z∈{8,32}, N=1024
-
-
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """
 

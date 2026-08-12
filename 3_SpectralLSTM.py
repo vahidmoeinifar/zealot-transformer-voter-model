@@ -1,10 +1,6 @@
 """
 Universal Magnetization Trajectory Predictor
 =============================================
-Idea A: Graph-level ODE emulator.
-
-Instead of predicting node states, predict the full magnetization
-trajectory m(0..T) directly from graph descriptors.
 
 Input (8D conditioning vector per graph):
   1. rho_Z              — zealot density Z/N
@@ -50,8 +46,8 @@ torch.cuda.manual_seed_all(SEED)
 
 ALL_Z    = [2, 8, 16, 32]
 N        = 1024
-T_STEPS  = 50      # trajectory length
-MC_RUNS  = 20      # MC runs to average for ground truth trajectory
+T_STEPS  = 50
+MC_RUNS  = 20
 
 
 # ─────────────────────────────────────────────────────────────
@@ -59,7 +55,6 @@ MC_RUNS  = 20      # MC runs to average for ground truth trajectory
 # ─────────────────────────────────────────────────────────────
 
 def compute_spectral_gap(G):
-    """Algebraic connectivity (2nd smallest Laplacian eigenvalue)."""
     try:
         L = nx.laplacian_matrix(G).astype(float)
         # Get 2 smallest eigenvalues
@@ -72,10 +67,7 @@ def compute_spectral_gap(G):
 
 
 def compute_descriptors(G, num_zealots, topo_type):
-    """
-    Compute 8D graph descriptor vector.
-    topo_type: 'ba', 'er', or 'ws'
-    """
+
     N_g     = G.number_of_nodes()
     degrees = np.array([d for _, d in G.degree()], dtype=np.float64)
 
@@ -174,12 +166,7 @@ def simulate_trajectory(G, num_zealots, T=50, mc_runs=20, seed=None):
 # ─────────────────────────────────────────────────────────────
 
 def build_dataset(zealot_list, num_graphs, T, mc_runs):
-    """
-    Each sample:
-      descriptors: (8,)  — graph-level conditioning
-      trajectory:  (T,)  — target magnetization m(0..T-1)
-      m0:          scalar — initial magnetization (used as seed for LSTM)
-    """
+
     print("\nBuilding trajectory dataset...", flush=True)
     print(f"  Z={zealot_list} | topologies=ba,er,ws | "
           f"{num_graphs} graphs each | T={T} | mc_runs={mc_runs}", flush=True)
@@ -223,7 +210,6 @@ def build_dataset(zealot_list, num_graphs, T, mc_runs):
 
 
 def normalize_descriptors(descriptors, stats=None):
-    """Z-score normalize descriptor features."""
     if stats is None:
         mean = descriptors.mean(axis=0)
         std  = descriptors.std(axis=0) + 1e-8
@@ -235,20 +221,8 @@ def normalize_descriptors(descriptors, stats=None):
 # ─────────────────────────────────────────────────────────────
 # Model: LSTM trajectory predictor
 # ─────────────────────────────────────────────────────────────
-
 class TrajectoryLSTM(nn.Module):
-    """
-    Predicts magnetization trajectory m(0..T-1) from graph descriptors.
 
-    Architecture:
-      1. Descriptor encoder: MLP(8 -> hidden_dim)
-      2. LSTM decoder: unrolls T steps, conditioned on encoded descriptor
-         as initial hidden state
-      3. Output head: linear(hidden_dim -> 1) per step
-
-    The descriptor sets the LSTM's initial hidden and cell state,
-    then the LSTM autoregressively predicts m(t) for t=0..T-1.
-    """
     def __init__(self, desc_dim=8, hidden_dim=128, num_layers=2,
                  T=50, dropout=0.1):
         super().__init__()
@@ -286,13 +260,7 @@ class TrajectoryLSTM(nn.Module):
 
     def forward(self, descriptors, teacher_forcing_ratio=0.0,
                 target_traj=None):
-        """
-        descriptors:          (B, 8)
-        teacher_forcing_ratio: probability of using ground truth at each step
-        target_traj:          (B, T) ground truth, needed if TF > 0
 
-        Returns: pred_traj (B, T) in [0, 1] scale
-        """
         B = descriptors.shape[0]
 
         # Encode descriptor -> initial LSTM state
@@ -329,10 +297,6 @@ class TrajectoryLSTM(nn.Module):
 # ─────────────────────────────────────────────────────────────
 
 def trajectory_loss(pred, target):
-    """
-    RMSE loss on trajectory + penalize late-step drift more.
-    pred, target: (B, T) in [0, 1]
-    """
     T = pred.shape[1]
     # Weight later steps more heavily to penalize drift
     weights = torch.linspace(1.0, 2.0, T, device=pred.device)

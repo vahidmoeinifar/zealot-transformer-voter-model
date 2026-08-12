@@ -6,7 +6,6 @@ to the 8D graph descriptor, making it sensitive to *where* zealots
 sit in the network, not just how many there are.
 
 New descriptor (11D):
-  Original 8D:
     1. rho_Z              — zealot density Z/N
     2. lambda_2           — algebraic connectivity
     3. mean_degree / N    — size-normalised mean degree
@@ -15,8 +14,6 @@ New descriptor (11D):
     6. topo_ba            — topology one-hot
     7. topo_er            — topology one-hot
     8. topo_ws            — topology one-hot
-
-  New placement features (+3D):
     9.  mean_degree_zealots / mean_degree_all  — hub score
                 (>1 means zealots sit on hubs, ~1 means random)
    10.  mean_betweenness_zealots / mean_betweenness_all  — bridge score
@@ -101,21 +98,7 @@ def compute_spectral_gap_and_fiedler(G):
 
 def compute_descriptors(G, num_zealots, topo_type, zealot_set,
                         betweenness=None):
-    """
-    Compute 11D descriptor vector.
 
-    Parameters
-    ----------
-    G           : networkx Graph
-    num_zealots : int
-    topo_type   : 'ba' | 'er' | 'ws'
-    zealot_set  : set of zealot node indices (from any placement strategy)
-    betweenness : precomputed betweenness dict or None (computed here if None)
-
-    Returns
-    -------
-    desc : np.ndarray shape (11,)
-    """
     N_g      = G.number_of_nodes()
     degrees  = np.array([d for _, d in G.degree()], dtype=np.float64)
 
@@ -201,11 +184,7 @@ GRAPH_MAKERS = {
 # ─────────────────────────────────────────────────────────────
 
 def simulate_trajectory(G, zealot_set, T=T_STEPS, mc_runs=MC_RUNS, seed=None):
-    """
-    Run mc_runs independent MC simulations and return mean magnetization
-    trajectory m(0..T) as numpy array of shape (T,).
-    zealot_set: set of zealot node indices.
-    """
+
     rng       = np.random.default_rng(seed)
     N_g       = G.number_of_nodes()
     adj       = [list(G.neighbors(n)) for n in range(N_g)]
@@ -237,14 +216,7 @@ def simulate_trajectory(G, zealot_set, T=T_STEPS, mc_runs=MC_RUNS, seed=None):
 # ─────────────────────────────────────────────────────────────
 
 def build_dataset(zealot_list, num_graphs, T, mc_runs):
-    """
-    Each sample covers both hub and random zealot placement,
-    doubling the dataset size relative to the original script.
 
-    Returns:
-      descriptors  : (M, 11)
-      trajectories : (M, T)
-    """
     print("\nBuilding placement-aware trajectory dataset...", flush=True)
     print(f"  Z={zealot_list} | topologies=ba,er,ws | "
           f"{num_graphs} graphs each | T={T} | mc_runs={mc_runs}", flush=True)
@@ -319,10 +291,7 @@ def normalize_descriptors(descriptors, stats=None):
 # ─────────────────────────────────────────────────────────────
 
 class TrajectoryLSTM(nn.Module):
-    """
-    Identical to original SpectralLSTM except desc_dim=11.
-    MLP encoder: 11 → 128 → 256 → 2LH
-    """
+
     def __init__(self, desc_dim=DESC_DIM, hidden_dim=256, num_layers=2,
                  T=T_STEPS, dropout=0.1):
         super().__init__()

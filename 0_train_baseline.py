@@ -12,14 +12,6 @@ Saves:
 Both files embed the norm_stats used during training so the eval
 script uses exactly the same normalisation.
 
-Setup is intentionally identical to compare_models_extended.py:
-  - Same graph topologies (BA/ER/WS), same Z values, same N, same m
-  - Same zealot placement (hubs)
-  - Same MC settings (mc_runs=20, T=50)
-  - norm_stats computed from this training set
-  - If universal_lstm.pt exists, its embedded norm_stats are used
-    instead (keeps everything aligned with the LSTM's training pipeline)
-
 Usage:
   python train_baselines.py
   python train_baselines.py --n-graphs 100 --mc-runs 30 --epochs 400

@@ -16,10 +16,7 @@ Two complementary analyses:
      - Saved as: convergence_speed.pdf / .png  (matches paper Fig style)
      - Also saves: convergence_speed.json
 
-Usage
------
-  python convergence_speed.py --zt_checkpoint saved_models/zealot_transformer.pt
-  python convergence_speed.py --zt_checkpoint ... --log_path saved_models/training_log.json
+
 """
 
 import os, json, argparse, warnings

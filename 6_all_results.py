@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 """
 eval_large_graphs.py — Evaluation for N ≥ 4096 (OOD large networks) — TRIMMED
-================================================================================
-Covers:
-  • Supplement C: BA only, hub only, N∈{4096,8192}, OOD Z∈{64,128}
-  • Supplement D: RGG only, hub only, N=1024, Z∈{2,32}
-
 
 Author: Vahid Moeinifar (AGH University of Science and Technology)
 """

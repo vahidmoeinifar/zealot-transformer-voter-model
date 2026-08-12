@@ -2,7 +2,7 @@
 Specialist GAT Models — Specialist-Low (Z=2) and Specialist-High (Z=32)
 ========================================================================
 Trains two specialist models, each on a single zealot count:
-  - Specialist-Low:  trained exclusively on Z=2  (rho_Z = 0.002)
+  - Specialist-Low:  trained exclusively on Z=2  (rho_Z = 0.002) --> Just this one used
   - Specialist-High: trained exclusively on Z=32 (rho_Z = 0.031)
 
 Architecture identical to Global-GAT:

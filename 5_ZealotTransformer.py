@@ -8,10 +8,7 @@ Reports validation RMSE on:
   - ER / hub placement
   - WS / hub placement
 
-This allows you to:
-  1. Stop training when RMSE stabilizes
-  2. Record the exact epoch you stopped
-  3. Track generalization during training
+
 """
 
 import os, random, argparse, time, json
@@ -44,7 +41,7 @@ TRAIN_N_LIST = [256, 512, 1024, 2048]
 TOPOLOGIES   = ['ba', 'er', 'ws']
 T_STEPS      = 50
 MC_RUNS      = 20
-NODE_FEAT_DIM = 5   # [z_i, deg_norm, fiedler_coord, pagerank_norm, local_clust]
+NODE_FEAT_DIM = 5
 
 # Validation parameters
 VAL_RUNS = 20          # Number of MC runs for validation

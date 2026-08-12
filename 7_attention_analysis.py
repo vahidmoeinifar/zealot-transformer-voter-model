@@ -25,9 +25,6 @@ Outputs
   attention_correlations.pdf / .png Pearson/Spearman vs m (density) per layer
   attention_analysis.json           raw correlation numbers
 
-Usage
------
-  python attention_analysis.py --zt_checkpoint saved_models/zealot_transformer.pt
 """
 
 import os, json, argparse, warnings
